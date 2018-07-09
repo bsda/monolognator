@@ -15,6 +15,9 @@ msg_limit = random.randint(5, 12)
 print(f'First msg limit: {msg_limit}')
 
 
+images = ['hand', 'bla', 'incoming', 'duck', 'typing1', 'tsunami']
+
+
 def start(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text="I'm The MonologNator. I'll be back")
@@ -22,7 +25,7 @@ def start(bot, update):
 
 def limit(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
-                     text=f"Current random monologue limit: {msg_limit}")
+                     text=f"Current monologue limit: {msg_limit}")
 
 
 def set_limit(bot, update):
@@ -97,7 +100,7 @@ def count(bot, update):
             bot.delete_message(chat_id=update.message.chat_id, message_id=m)
 
         # Send message with the last 10 message by the user
-        bot.send_document(chat_id=update.message.chat_id, document=open('./tsunami.gif', 'rb'), timeout=100)
+        bot.send_document(chat_id=update.message.chat_id, document=open(random.choice(images) + '.gif', 'rb'), timeout=100)
         bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,

@@ -100,7 +100,8 @@ def count(bot, update):
             bot.delete_message(chat_id=update.message.chat_id, message_id=m)
 
         # Send message with the last 10 message by the user
-        bot.send_document(chat_id=update.message.chat_id, document=open(random.choice(images) + '.gif', 'rb'), timeout=100)
+        bot.send_document(chat_id=update.message.chat_id,
+                          document=open('./gifs/' + random.choice(images) + '.gif', 'rb'), timeout=100)
         bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,

@@ -30,7 +30,7 @@ def limit(bot, update):
 
 
 def set_limit(bot, update):
-    logger.info(update.message.text)
+    logger.debug(update.message.text)
     global msg_limit
     msg = update.message.text
     msg_limit = int(re.findall('[0-9]+', msg)[0])
@@ -70,11 +70,12 @@ def count(bot, update):
 
     logger.info(f'Count for {user}: {counter[user]["count"]}')
     previous_user = user
-    # logger.info(update.message)
-    logger.info(f'limit: {msg_limit}')
-    logger.info(counter[user]['msg_ids'])
-    logger.info(counter[user]['msgs'])
+    logger.info(update.message)
+    logger.debug(f'limit: {msg_limit}')
+    logger.debug(counter[user]['msg_ids'])
+    logger.debug(counter[user]['msgs'])
     user_count = counter[user]['count']
+    logger.info('================================================')
 
     if user_count == msg_limit:
         # Clear counter for user

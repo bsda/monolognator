@@ -5,7 +5,7 @@ import logging
 import os
 import re
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ def count(bot, update):
 
     logger.info(f'Count for {user}: {counter[user]["count"]}')
     previous_user = user
-    logger.info(update.message)
+    logger.info(f'Msg from user {update.message.from_user.first_name}:  {update.message.text}')
     logger.debug(f'limit: {msg_limit}')
     logger.debug(counter[user]['msg_ids'])
     logger.debug(counter[user]['msgs'])

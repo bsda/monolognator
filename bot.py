@@ -70,7 +70,8 @@ def count(bot, update):
 
     logger.info(f'Count for {user}: {counter[user]["count"]}')
     previous_user = user
-    logger.info(f'Msg from user {update.message.from_user.first_name}:  {update.message.text}')
+    logger.info(f'Msg on {update.message.chat.title}'
+                f' from {update.message.from_user.first_name}:  {update.message.text}')
     logger.debug(f'limit: {msg_limit}')
     logger.debug(counter[user]['msg_ids'])
     logger.debug(counter[user]['msgs'])

@@ -25,6 +25,7 @@ def start(bot, update):
 
 
 def limit(bot, update):
+    logger.info(f'Limit query on {update.message.chat.title} by {update.message.from_user.first_name}')
     bot.send_message(chat_id=update.message.chat_id,
                      text=f"Current monologue limit: {msg_limit}")
 

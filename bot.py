@@ -13,7 +13,7 @@ counter = {}
 previous_user = None
 msg_limit = random.randint(5, 12)
 my_chat_id = 113426151
-print(f'First msg limit: {msg_limit}')
+logger.info(f'First msg limit: {msg_limit}')
 
 # List of existing gifs to send to chat
 gifs = ['hand', 'bla', 'incoming', 'duck', 'typing1', 'tsunami']
@@ -30,7 +30,7 @@ def limit(bot, update):
 
 
 def set_limit(bot, update):
-    print(update.message.text)
+    logger.info(update.message.text)
     global msg_limit
     msg = update.message.text
     msg_limit = int(re.findall('[0-9]+', msg)[0])
@@ -63,17 +63,17 @@ def count(bot, update):
             counter[user]['msgs'].append(update.message.text)
         else:
             # If it's a new user, reset counter for previous user
-            print(f'Reseting the counter for {previous_user}')
+            logger.info(f'Reseting the counter for {previous_user}')
             counter[previous_user]['count'] = 1
             counter[previous_user]['msg_ids'] = list()
             counter[previous_user]['msgs'] = list()
 
-    print(f'Count for {user}: {counter[user]["count"]}')
+    logger.info(f'Count for {user}: {counter[user]["count"]}')
     previous_user = user
-    # print(update.message)
-    print(f'limit: {msg_limit}')
-    print(counter[user]['msg_ids'])
-    print(counter[user]['msgs'])
+    # logger.info(update.message)
+    logger.info(f'limit: {msg_limit}')
+    logger.info(counter[user]['msg_ids'])
+    logger.info(counter[user]['msgs'])
     user_count = counter[user]['count']
 
     if user_count == msg_limit:
@@ -82,7 +82,7 @@ def count(bot, update):
 
         # Reset random limit
         msg_limit = random.randint(5, 12)
-        print(f'New random limit: {msg_limit}')
+        logger.info(f'New random limit: {msg_limit}')
         bot.send_message(chat_id=my_chat_id, text=f'New msg limit set: {msg_limit}')
 
         # Delete messages from group

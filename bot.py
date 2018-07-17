@@ -38,6 +38,99 @@ def set_limit(bot, update):
     logger.info(f'New Limit set by {update.message.from_user.first_name}: {msg_limit}')
 
 
+def send_gif(bot, update):
+    bot.send_document(chat_id=update.message.chat_id,
+                      document=open('./gifs/' + random.choice(gifs) + '.gif', 'rb'), timeout=100)
+
+
+def delete_messages(bot, update, user, chat):
+    # Delete messages from group
+    for m in set(counter[user]['msg_ids']):
+        bot.delete_message(chat_id=chat, message_id=m)
+
+
+def multi_count(bot, update):
+    global counter
+    global previous_user
+    global msg_limit
+
+    user = update.message.from_user.id
+    chat = update.message.chat_id
+
+    #Check if chat is in counter
+    if chat not in counter:
+        counter[chat] = {}
+
+    # if user not seen before in this chat, create dictionary and set initial count
+    if user not in counter[chat]:
+        counter[chat][user] = {}
+        user_counter = counter[chat][user]
+        user_counter['count'] = 1
+        user_counter['msg_ids'] = [update.message.message_id]
+        user_counter['msgs'] = [update.message.text]
+        counter[chat]['latest_by'] = user
+    else:
+        # if we seen the user before, check if previous msg was by the same user
+        # if it was, increase counter and add msgs
+        if user == counter[chat]['latest_by']:
+            user_counter = counter[chat][user]
+            user_counter['count'] += 1
+            user_counter['msg_ids'].append(update.message.message_id)
+            user_counter['msgs'].append(update.message.text)
+        else:
+            # If the msg was by a different user, reset counter for previous user and start new counter for new user.
+            previous_user = counter[chat]['latest_by']
+            logger.info(f"Reseting the counter for {previous_user}")
+            user_counter = counter[chat][user]
+            # remove previous user from dictionary
+            counter[chat].pop(previous_user)
+            user_counter['count'] = 1
+            user_counter['msg_ids'] = [update.message.message_id]
+            user_counter['msgs'] = [update.message.text]
+            counter[chat]['latest_by'] = user
+
+    logger.info(f'Count for {user}: {counter[chat][user]["count"]}')
+    logger.info(f'Msg on {update.message.chat.title}'
+                f' from {update.message.from_user.first_name}:  {update.message.text}')
+    logger.debug(f'limit: {msg_limit}')
+    logger.debug(counter[user]['msg_ids'])
+    logger.debug(counter[user]['msgs'])
+    user_count = counter[user]['count']
+    logger.info('================================================')
+
+    if user_count == msg_limit:
+        # Clear counter for user
+        counter[user]['count'] = 0
+
+        # Reset random limit
+        msg_limit = random.randint(5, 12)
+        logger.info(f'New random limit: {msg_limit}')
+        bot.send_message(chat_id=my_chat_id, text=f'New msg limit set: {msg_limit}')
+
+        # Delete messages from group
+        for m in set(counter[user]['msg_ids']):
+            bot.delete_message(chat_id=update.message.chat_id, message_id=m)
+
+        # Send funny gif
+        bot.send_document(chat_id=update.message.chat_id,
+                          document=open('./gifs/' + random.choice(gifs) + '.gif', 'rb'), timeout=100)
+
+        # Send monologue back as a single message
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='*Monologue by {}*:\n\n`{}`'.format(
+                             update.message.from_user.first_name,
+                             "\n".join(counter[user]['msgs'])), parse_mode=telegram.ParseMode.MARKDOWN)
+
+        # reset msgs and counters for user
+        counter[user]['msgs'] = list()
+        counter[user]['msg_ids'] = list()
+
+
+
+
+
+
+
 def count(bot, update):
     global counter
     global previous_user

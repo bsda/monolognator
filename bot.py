@@ -40,6 +40,7 @@ def random_limit(bot, update):
     global msg_limit
     msg_limit[update.message.chat_id] = random.randint(5, 12)
     logger.info(f'Random limit of {msg_limit[update.message.chat_id]} set on {update.message.chat.title}')
+    return msg_limit[update.message.chat_id]
 
 
 def set_limit(bot, update):
@@ -70,7 +71,7 @@ def multi_count(bot, update):
     chat = update.message.chat_id
 
     if chat not in msg_limit:
-        msg_limit[chat] = random.randint(5, 12)
+        random_limit(bot, update)
 
     #Check if chat is in counter
     if chat not in counter:
@@ -119,10 +120,9 @@ def multi_count(bot, update):
         counter[chat][user]['count'] = 0
 
         # Reset random limit
-        msg_limit[chat] = random.randint(5, 12)
-        logger.info(f'New random limit: {msg_limit[chat]}')
+        limit = random_limit(bot, update)
         bot.send_message(chat_id=my_chat_id,
-                         text=f'New msg limit set on {update.message.chat.title}: {msg_limit[chat]}')
+                         text=f'New msg limit set on {update.message.chat.title}: {limit}')
 
         # Delete messages from group
         for m in set(counter[chat][user]['msg_ids']):
@@ -219,7 +219,8 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('limit', get_limit))
     updater.dispatcher.add_handler(CommandHandler('set_limit', set_limit))
     updater.dispatcher.add_handler(MessageHandler(Filters.text, multi_count))
-    updater.start_polling()
+    updater.start_polling(clean=True)
+    logger.info('Starting Monolognator...')
     updater.idle()
 
 

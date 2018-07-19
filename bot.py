@@ -112,9 +112,9 @@ def hit_limit(chat, user, update):
     if chat not in msg_limit:
         random_limit(update)
         return False
-    chat_limit = msg_limit[chat]
+    chat_limit = get_limit(chat)
 
-    if get_count(chat, user) >= chat_limit:
+    if get_count(chat, user) == chat_limit:
         # Reset counter. limit and return True
         random_limit(update)
         return True

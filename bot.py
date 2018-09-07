@@ -21,12 +21,15 @@ def start(bot, update):
 
 
 def query_limit(bot, update):
+    user = update.message.from_user.id
+    chat = update.message.chat_id
     if update.message.chat_id not in msg_limit:
         random_limit(update)
     logger.info(f'Limit query on {update.message.chat.title}'
                 f' by {update.message.from_user.first_name}.'
                 f' Limit: {msg_limit[update.message.chat_id]}')
-    update.message.reply_text(f"Current monologue limit: {get_limit(update.message.chat_id)}")
+    update.message.reply_text(f"Current limit: {get_limit(update.message.chat_id)}\n"
+                              f"Your count: {get_count(chat, user)}")
     logger.info('================================================')
 
 

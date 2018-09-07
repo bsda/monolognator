@@ -4,6 +4,7 @@ import random
 import logging
 import os
 import re
+import requests
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -59,13 +60,37 @@ def set_limit(bot, update):
                               f' by {update.message.from_user.first_name}: {msg_limit[update.message.chat_id]}')
 
 
-def send_gif(bot, update):
+def get_random_giphy(keyword=None):
+    giphy_token=os.getenv('giphy_token')
+    # s = requests.session()
+    params = {'api_key': giphy_token, 'rating': 'r'}
+    if keyword:
+        params.update({'tag': keyword})
+    re = requests.get(f'https://api.giphy.com/v1/gifs/random', params=params)
+    gif = re.json()['data']['images']['downsized_medium']['url']
+    title = re.json()['data']['title']
+    print(f'Sending gif: {gif}')
+    return gif, title
+
+
+
+def ping(bot, update):
+    gif, title = get_random_giphy(keyword='pong')
+    bot.send_document(chat_id=update.message.chat_id,
+                      document=gif, timeout=100)
+
+
+def get_random_local_gif():
     gifs = list()
     for file in os.listdir(gif_path):
         if file.endswith('.gif'):
             gifs.append(file)
+    return gif_path + random.choice(gifs)
+
+
+def send_local_gif(bot, update, gif):
     bot.send_document(chat_id=update.message.chat_id,
-                      document=open(gif_path + random.choice(gifs), 'rb'), timeout=100)
+                      document=open(get_random_local_gif(), 'rb'), timeout=500)
 
 
 def delete_messages(bot, user, chat):
@@ -127,7 +152,7 @@ def hit_limit(chat, user, update):
 def monolognate(chat, user, bot, update):
 
     delete_messages(bot, user, chat)
-    send_gif(bot, update)
+    send_local_gif(bot, update)
     # Send monologue back as a single message
     bot.send_message(chat_id=update.message.chat_id,
                      text='*Monologue by {}*:\n\n`{}`'.format(
@@ -163,6 +188,7 @@ def main():
 
     updater = Updater(os.getenv('telegram_token'))
     updater.dispatcher.add_handler(CommandHandler('start', start))
+    updater.dispatcher.add_handler(CommandHandler('ping', ping))
     updater.dispatcher.add_handler(CommandHandler('limit', query_limit))
     updater.dispatcher.add_handler(CommandHandler('set_limit', set_limit))
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))

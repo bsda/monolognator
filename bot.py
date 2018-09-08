@@ -6,6 +6,7 @@ import os
 import re
 import requests
 import uuid
+import time
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -119,6 +120,119 @@ def get_random_giphy(keyword=None):
     return gif, title
 
 
+def get_weather():
+    location = '51.4975,-0.1357'
+    key = os.getenv('darksky_token')
+    params = {'units': 'si'}
+    re = requests.get(f'https://api.darksky.net/forecast/{key}/{location}', params=params)
+    results = re.json()
+    return results
+
+
+def weather(bot, update):
+    """
+    Currenty:
+    ['currently']['time']
+    ['currently']['summary']
+    ['currently']['precipProbability']
+    ['currently']['temperature']
+    Next Hour:
+    ['minutely']['summary']
+    Day:
+    ['hourly']['summary']
+    for i in ['hourly']['data']
+        i['precipProbability'] - get highest
+        i['time']
+        i['summary']
+    Weekly:
+    ['daily']['summary']
+    for i in ['daily']['data']
+        i['time']
+        i['summary']
+        i['precipProbability']
+        i['temperatureHigh']
+        i['temperatureLow']
+    :return:
+    """
+    results = get_weather()
+    # getting the highest chance of precipitation in the next 24h
+    highest_chance_of_rain = 0
+    day_summary = {}
+    for i in results['hourly']['data']:
+        if i['precipProbability'] > 0 and i['precipProbability'] > highest_chance_of_rain:
+            highest_chance_of_rain = i['precipProbability']
+            day_summary = {'chance': highest_chance_of_rain * 100,
+                           'time': i['time'], 'summary': i['summary']}
+
+    message = f'''Good Morning {update.message.chat.title}, here is your daily forecast:
+    
+    *Current Conditions:*
+    {results['currently']['summary']}
+    Chance of Rain: {results['currently']['precipProbability'] * 100}%, Current Temperature: {results['currently']['temperature']}C
+    
+    *Summary of conditions for the next hour:*
+    {results['minutely']['summary']}
+    
+    *Conditions for the rest of the day:*
+    {results['hourly']['summary']}
+    Highest Chance of Rain: {day_summary['chance']}% at {time.strftime('%l%p', time.localtime(day_summary['time']))}
+    
+    *Summary of conditions for the rest of the week:*
+    {results['daily']['summary']}'''
+
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=f'*Monolognator Weather Report powered by darksky.net*:\n\n{message}',
+                     parse_mode=telegram.ParseMode.MARKDOWN)
+
+def vai_chover2():
+    results = get_weather()
+    # getting the highest chance of precipitation in the next 24h
+    rain_threshold = 11
+    highest_chance = 0
+    for i in results['hourly']['data']:
+        day = int(time.strftime('%d', time.localtime(i['time'])))
+        hour = int(time.strftime('%H', time.localtime(i['time'])))
+        chance = i['precipProbability'] * 100
+        if not 6 <= hour <= 20:
+            continue
+        if chance > highest_chance:
+            highest_chance = chance
+    if highest_chance <= 15:
+        return 'Nao vai chover'
+    elif 15 < highest_chance <= 30:
+        return 'Pode chover'
+    elif 30 < highest_chance <= 50:
+        return 'Provavelmente vai chover'
+    return 'Vai chover'
+
+
+
+def vai_chover():
+    results = get_weather()
+    # getting the highest chance of precipitation in the next 24h
+    rain_threshold = 11
+    for i in results['hourly']['data']:
+        day = int(time.strftime('%d', time.localtime(i['time'])))
+        hour = int(time.strftime('%H', time.localtime(i['time'])))
+        chance = i['precipProbability'] * 100
+        if not 6 <= hour <= 20:
+            continue
+        if chance >= rain_threshold:
+            return 'Vai Chover'
+    return 'Nao Vai Chover'
+
+
+def chuva(bot, update):
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=f'Bom dia, *{vai_chover()}*',
+                     parse_mode=telegram.ParseMode.MARKDOWN)
+
+
+def chuva2(bot, update):
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=f'Bom dia, *{vai_chover2()}*',
+                     parse_mode=telegram.ParseMode.MARKDOWN)
+
 
 def ping(bot, update):
     gif, title = get_random_giphy(keyword='pong')
@@ -182,7 +296,6 @@ def get_limit(chat):
 
 
 def hit_limit(chat, user, update):
-
     if chat not in msg_limit:
         random_limit(update)
         return False
@@ -242,6 +355,9 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('ping', ping))
     updater.dispatcher.add_handler(CommandHandler('limit', query_limit))
     updater.dispatcher.add_handler(CommandHandler('set_limit', set_limit))
+    updater.dispatcher.add_handler(CommandHandler('weather', get_weather))
+    updater.dispatcher.add_handler(CommandHandler('chuva', chuva))
+    updater.dispatcher.add_handler(CommandHandler('chuva2', chuva2))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     updater.dispatcher.add_error_handler(error)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))

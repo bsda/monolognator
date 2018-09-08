@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import requests
+import uuid
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -68,16 +69,16 @@ def inlinequery(bot, update):
         offset = 0
     else:
         offset = int(update.inline_query.offset)
-    gifs = search_giphy(query, offset)
+    gifs = search_tenor(query, offset)
     results = list()
     for gif in gifs:
         results.append(telegram.InlineQueryResultGif(
-            id=gif['id'],
+            id=uuid.uuid4(),
             type='gif',
             gif_url=gif['url'],
             thumb_url=gif['thumb_url']
         ))
-    update.inline_query.answer(results, timeout=5000, next_offset=int(offset)+50)
+    update.inline_query.answer(results, timeout=5000, next_offset=int(offset)+40)
 
 
 def search_giphy(keyword, offset=0):
@@ -89,6 +90,19 @@ def search_giphy(keyword, offset=0):
     for g in re.json()['data']:
         gifs.append({'id': g['id'], 'url': g['images']['downsized_medium']['url'],
                      'thumb_url': g['images']['preview_gif']['url']})
+    return gifs
+
+
+def search_tenor(keyword, offset=0):
+    gifs = []
+    tenor_token = os.getenv('tenor_token')
+    params = {'key': tenor_token, 'media_filter': 'minimal',
+              'q': keyword, 'limit': 40, 'pos': offset}
+    re = requests.get(f'https://api.tenor.com/v1/search', params=params)
+    for g in re.json()['results']:
+        for m in g['media']:
+            gifs.append({'id': g['id'], 'url': m['gif']['url'],
+                         'thumb_url': m['gif']['preview']})
     return gifs
 
 

@@ -1,4 +1,4 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
 import telegram
 import random
 import logging
@@ -58,6 +58,38 @@ def set_limit(bot, update):
         bot.send_message(chat_id=my_chat_id,
                          text=f'Manual limit set on {update.message.chat.title}'
                               f' by {update.message.from_user.first_name}: {msg_limit[update.message.chat_id]}')
+
+
+def inlinequery(bot, update):
+    """Handle the inline query."""
+    query = update.inline_query.query
+    print(query)
+    if not update.inline_query.offset:
+        offset = 0
+    else:
+        offset = int(update.inline_query.offset)
+    gifs = search_giphy(query, offset)
+    results = list()
+    for gif in gifs:
+        results.append(telegram.InlineQueryResultGif(
+            id=gif['id'],
+            type='gif',
+            gif_url=gif['url'],
+            thumb_url=gif['thumb_url']
+        ))
+    update.inline_query.answer(results, timeout=5000, next_offset=int(offset)+50)
+
+
+def search_giphy(keyword, offset=0):
+    gifs = []
+    giphy_token = os.getenv('giphy_token')
+    params = {'api_key': giphy_token, 'rating': 'r',
+              'q': keyword, 'limit': 50, 'offset': offset}
+    re = requests.get(f'https://api.giphy.com/v1/gifs/search', params=params)
+    for g in re.json()['data']:
+        gifs.append({'id': g['id'], 'url': g['images']['downsized_medium']['url'],
+                     'thumb_url': g['images']['preview_gif']['url']})
+    return gifs
 
 
 def get_random_giphy(keyword=None):
@@ -184,6 +216,11 @@ def handle_counter(bot, update):
             reset_count(chat, user, update)
 
 
+def error(bot, update, error):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, error)
+
+
 def main():
 
     updater = Updater(os.getenv('telegram_token'))
@@ -191,6 +228,8 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('ping', ping))
     updater.dispatcher.add_handler(CommandHandler('limit', query_limit))
     updater.dispatcher.add_handler(CommandHandler('set_limit', set_limit))
+    updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
+    updater.dispatcher.add_error_handler(error)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     updater.start_polling(clean=True)
     logger.info('Starting Monolognator...')

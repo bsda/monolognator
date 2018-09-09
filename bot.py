@@ -8,6 +8,10 @@ import requests
 import uuid
 import time
 import datetime
+from geopy import Nominatim
+
+
+
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -119,6 +123,12 @@ def get_random_tenor(keyword):
     return gif
 
 
+def send_random_tenor(bot, update, keyword):
+    gif = get_random_tenor(keyword)
+    bot.send_document(chat_id=update.message.chat_id,
+                      document=gif, timeout=100)
+
+
 def get_random_giphy(keyword=None):
     giphy_token=os.getenv('giphy_token')
     # offset = 0
@@ -138,16 +148,19 @@ def get_random_giphy(keyword=None):
     return gif
 
 
-def get_weather():
-    location = '51.4975,-0.1357'
+def get_weather(location='London'):
+    geo = Nominatim(user_agent='Monolognator')
+    loc = geo.geocode(location)
+    latlon = f'{loc.latitude}, {loc.longitude}'
+    # location = '51.4975,-0.1357'
     key = os.getenv('darksky_token')
     params = {'units': 'si'}
-    re = requests.get(f'https://api.darksky.net/forecast/{key}/{location}', params=params)
+    re = requests.get(f'https://api.darksky.net/forecast/{key}/{latlon}', params=params)
     results = re.json()
     return results
 
 
-def weather(bot, update):
+def weather(bot, update, location=None):
     """
     Currenty:
     ['currently']['time']
@@ -172,7 +185,11 @@ def weather(bot, update):
         i['temperatureLow']
     :return:
     """
-    results = get_weather()
+    if update.message.text == '/weather':
+        location = 'London'
+    else:
+        location = update.message.text.split('/weather ')[1]
+    results = get_weather(location)
     # getting the highest chance of precipitation in the next 24h
     highest_chance_of_rain = 0
     day_summary = {}
@@ -201,6 +218,7 @@ def weather(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text=f'*Monolognator Weather Report powered by darksky.net*:\n\n{message}',
                      parse_mode=telegram.ParseMode.MARKDOWN)
+
 
 def vai_chover2():
     results = get_weather()
@@ -277,7 +295,7 @@ def get_random_local_gif():
     return gif_path + random.choice(gifs)
 
 
-def send_local_gif(bot, update, gif):
+def send_local_gif(bot, update):
     bot.send_document(chat_id=update.message.chat_id,
                       document=open(get_random_local_gif(), 'rb'), timeout=500)
 
@@ -340,7 +358,7 @@ def hit_limit(chat, user, update):
 def monolognate(chat, user, bot, update):
 
     delete_messages(bot, user, chat)
-    send_local_gif(bot, update)
+    send_random_tenor(bot, update, 'tsunami')
     # Send monologue back as a single message
     bot.send_message(chat_id=update.message.chat_id,
                      text='*Monologue by {}*:\n\n`{}`'.format(

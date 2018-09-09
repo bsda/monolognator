@@ -236,8 +236,8 @@ def vai_chover():
         if not 6 <= hour <= 20:
             continue
         if chance >= rain_threshold:
-            return 'Vai Chover'
-    return 'Nao Vai Chover'
+            return 'Vai chover'
+    return 'Nao vai chover'
 
 
 def chuva(bot, update, chat_id=None):

@@ -116,7 +116,7 @@ def get_random_tenor(keyword):
     tenor_token = os.getenv('tenor_token')
     params = {'key': tenor_token, 'media_filter': 'minimal',
               'q': keyword, 'limit': 50, 'pos': random.choice(range(300))}
-    print(params)
+    # print(params)
     re = requests.get(f'https://api.tenor.com/v1/random', params=params)
     gif = random.choice(re.json()['results'])['media'][0]['mediumgif']['url']
     print(gif)
@@ -143,12 +143,13 @@ def get_random_giphy(keyword=None):
 
     re = requests.get(f'https://api.giphy.com/v1/gifs/random', params=params)
     gif = re.json()['data']['images']['downsized_medium']['url']
-    print(f'Sending gif: {gif}')
+    logger.info(f'Sending gif: {gif}')
     # gif = random.choice(gifs)['url']
     return gif
 
 
 def get_weather(location='London'):
+    logger.info(f'Getting weather for {location}')
     geo = Nominatim(user_agent='Monolognator')
     loc = geo.geocode(location)
     latlon = f'{loc.latitude}, {loc.longitude}'
@@ -262,12 +263,13 @@ def chuva(bot, update, chat_id=None):
     if chat_id is None:
         chat_id = update.message.chat_id
     chove = vai_chover()
+    logger.info(f'Chove? {chove}')
     if chove == 'Vai chover':
         gif = get_random_giphy(keyword='sad')
     else:
         gif = get_random_giphy(keyword='happy')
     bot.send_document(chat_id=chat_id,
-                      document=gif, caption=f'Bom dia, {chove} hoje', timeout=1000,
+                      document=gif, caption=f'Bom dia, {chove} hoje', timeout=5000,
                       parse_mode=telegram.ParseMode.MARKDOWN)
 
     # bot.send_message(chat_id=update.message.chat_id,
@@ -393,6 +395,7 @@ def handle_counter(bot, update):
 
 def scheduled_weather(bot, job):
     chove = vai_chover()
+    logger.info(f'Running scheduled job: {chove}')
     if chove == 'Vai chover':
         gif = get_random_giphy(keyword='sad')
     else:

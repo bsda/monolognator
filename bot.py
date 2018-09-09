@@ -7,6 +7,7 @@ import re
 import requests
 import uuid
 import time
+import datetime
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -107,17 +108,34 @@ def search_tenor(keyword, offset=0):
     return gifs
 
 
+def get_random_tenor(keyword):
+    tenor_token = os.getenv('tenor_token')
+    params = {'key': tenor_token, 'media_filter': 'minimal',
+              'q': keyword, 'limit': 50, 'pos': random.choice(range(300))}
+    print(params)
+    re = requests.get(f'https://api.tenor.com/v1/random', params=params)
+    gif = random.choice(re.json()['results'])['media'][0]['mediumgif']['url']
+    print(gif)
+    return gif
+
+
 def get_random_giphy(keyword=None):
     giphy_token=os.getenv('giphy_token')
-    # s = requests.session()
+    # offset = 0
+    # gifs = list()
     params = {'api_key': giphy_token, 'rating': 'r'}
     if keyword:
         params.update({'tag': keyword})
+    # for i in range(5):
+    #     gifs.extend(search_tenor(keyword, offset=offset))
+    #     offset+=40
+
+
     re = requests.get(f'https://api.giphy.com/v1/gifs/random', params=params)
     gif = re.json()['data']['images']['downsized_medium']['url']
-    title = re.json()['data']['title']
     print(f'Sending gif: {gif}')
-    return gif, title
+    # gif = random.choice(gifs)['url']
+    return gif
 
 
 def get_weather():
@@ -222,10 +240,21 @@ def vai_chover():
     return 'Nao Vai Chover'
 
 
-def chuva(bot, update):
-    bot.send_message(chat_id=update.message.chat_id,
-                     text=f'Bom dia, *{vai_chover()}*',
-                     parse_mode=telegram.ParseMode.MARKDOWN)
+def chuva(bot, update, chat_id=None):
+    if chat_id is None:
+        chat_id = update.message.chat_id
+    chove = vai_chover()
+    if chove == 'Vai chover':
+        gif = get_random_giphy(keyword='sad')
+    else:
+        gif = get_random_giphy(keyword='happy')
+    bot.send_document(chat_id=chat_id,
+                      document=gif, caption=f'Bom dia, {chove} hoje', timeout=1000,
+                      parse_mode=telegram.ParseMode.MARKDOWN)
+
+    # bot.send_message(chat_id=update.message.chat_id,
+    #                  text=f'Bom dia, *{vai_chover()}*',
+    #                  parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def chuva2(bot, update):
@@ -323,8 +352,8 @@ def monolognate(chat, user, bot, update):
 def handle_counter(bot, update):
     user = update.message.from_user.id
     chat = update.message.chat_id
-    logger.info(f'Msg on {update.message.chat.title}'
-                f' from {update.message.from_user.first_name}:  {update.message.text}')
+    logger.info(f'Msg on {update.message.chat.title}({chat})'
+                f' from {update.message.from_user.first_name}({user}): {update.message.text}')
 
     # If it's a new user or the count was reset earlier
     if chat not in counter or user not in counter[chat]:
@@ -343,6 +372,19 @@ def handle_counter(bot, update):
             reset_count(chat, user, update)
 
 
+
+def scheduled_weather(bot, job):
+    chove = vai_chover()
+    if chove == 'Vai chover':
+        gif = get_random_giphy(keyword='sad')
+    else:
+        gif = get_random_giphy(keyword='happy')
+    bot.send_document(chat_id=-1001105653255,
+                      document=gif, caption=f'Em Westminster, 6 da manha! Bom dia, {chove} hoje', timeout=1000,
+                      parse_mode=telegram.ParseMode.MARKDOWN)
+
+
+
 def error(bot, update, error):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, error)
@@ -355,12 +397,14 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('ping', ping))
     updater.dispatcher.add_handler(CommandHandler('limit', query_limit))
     updater.dispatcher.add_handler(CommandHandler('set_limit', set_limit))
-    updater.dispatcher.add_handler(CommandHandler('weather', get_weather))
+    updater.dispatcher.add_handler(CommandHandler('weather', weather))
     updater.dispatcher.add_handler(CommandHandler('chuva', chuva))
     updater.dispatcher.add_handler(CommandHandler('chuva2', chuva2))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     updater.dispatcher.add_error_handler(error)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
+    j = updater.job_queue
+    daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
     updater.start_polling(clean=True)
     logger.info('Starting Monolognator...')
     updater.idle()

@@ -417,14 +417,17 @@ def chuva2(bot, update, chat_id=None):
 
 
 def scheduled_weather(bot, job):
+    results = get_weather()
+    max_temp = results['daily']['data'][0]['temperatureMax']
     chove = vai_chover()
-    logger.info(f'Running scheduled job: {chove}')
+    logger.info(f'Chove? {chove}')
     if chove == 'Vai chover':
         gif = get_random_giphy(keyword='sad')
     else:
         gif = get_random_giphy(keyword='happy')
     bot.send_document(chat_id=-1001105653255,
-                      document=gif, caption=f'Em Westminster, 6 da manha! Bom dia, {chove} hoje', timeout=1000,
+                      document=gif, caption=f'Em Westminster, 6 da manha! Bom dia!\n'
+                                            f'*{chove}* hoje\nMax Temp: *{max_temp}*C', timeout=1000,
                       parse_mode=telegram.ParseMode.MARKDOWN)
 
 
@@ -453,7 +456,7 @@ def main():
     updater.dispatcher.add_error_handler(error)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
-    daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
+    daily_job = j.run_daily(scheduled_weather, time=datetime.time(5))
     updater.start_polling(clean=True)
     logger.info('Starting Monolognator...')
     updater.idle()

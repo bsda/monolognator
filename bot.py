@@ -28,6 +28,7 @@ def start(bot, update):
                      text="I'm The MonologNator. I'll be back")
 
 
+# LIMITS
 def query_limit(bot, update):
     user = update.message.from_user.id
     chat = update.message.chat_id
@@ -67,241 +68,7 @@ def set_limit(bot, update):
                               f' by {update.message.from_user.first_name}: {msg_limit[update.message.chat_id]}')
 
 
-def inlinequery(bot, update):
-    """Handle the inline query."""
-    query = update.inline_query.query
-    print(query)
-    if not update.inline_query.offset:
-        offset = 0
-    else:
-        offset = int(update.inline_query.offset)
-    gifs = search_tenor(query, offset)
-    results = list()
-    for gif in gifs:
-        results.append(telegram.InlineQueryResultGif(
-            id=uuid.uuid4(),
-            type='gif',
-            gif_url=gif['url'],
-            thumb_url=gif['thumb_url']
-        ))
-    update.inline_query.answer(results, timeout=5000, next_offset=int(offset)+40)
-
-
-def search_giphy(keyword, offset=0):
-    gifs = []
-    giphy_token = os.getenv('giphy_token')
-    params = {'api_key': giphy_token, 'rating': 'r',
-              'q': keyword, 'limit': 50, 'offset': offset}
-    re = requests.get(f'https://api.giphy.com/v1/gifs/search', params=params)
-    for g in re.json()['data']:
-        gifs.append({'id': g['id'], 'url': g['images']['downsized_medium']['url'],
-                     'thumb_url': g['images']['preview_gif']['url']})
-    return gifs
-
-
-def search_tenor(keyword, offset=0):
-    gifs = []
-    tenor_token = os.getenv('tenor_token')
-    params = {'key': tenor_token, 'media_filter': 'minimal',
-              'q': keyword, 'limit': 40, 'pos': offset}
-    re = requests.get(f'https://api.tenor.com/v1/search', params=params)
-    for g in re.json()['results']:
-        for m in g['media']:
-            gifs.append({'id': g['id'], 'url': m['gif']['url'],
-                         'thumb_url': m['gif']['preview']})
-    return gifs
-
-
-def get_random_tenor(keyword):
-    tenor_token = os.getenv('tenor_token')
-    params = {'key': tenor_token, 'media_filter': 'minimal',
-              'q': keyword, 'limit': 50, 'pos': random.choice(range(300))}
-    # print(params)
-    re = requests.get(f'https://api.tenor.com/v1/random', params=params)
-    gif = random.choice(re.json()['results'])['media'][0]['mediumgif']['url']
-    print(gif)
-    return gif
-
-
-def send_random_tenor(bot, update, keyword):
-    gif = get_random_tenor(keyword)
-    bot.send_document(chat_id=update.message.chat_id,
-                      document=gif, timeout=100)
-
-
-def get_random_giphy(keyword=None):
-    giphy_token=os.getenv('giphy_token')
-    # offset = 0
-    # gifs = list()
-    params = {'api_key': giphy_token, 'rating': 'r'}
-    if keyword:
-        params.update({'tag': keyword})
-    # for i in range(5):
-    #     gifs.extend(search_tenor(keyword, offset=offset))
-    #     offset+=40
-
-
-    re = requests.get(f'https://api.giphy.com/v1/gifs/random', params=params)
-    gif = re.json()['data']['images']['downsized_medium']['url']
-    logger.info(f'Sending gif: {gif}')
-    # gif = random.choice(gifs)['url']
-    return gif
-
-
-def get_weather(location='London'):
-    logger.info(f'Getting weather for {location}')
-    geo = Nominatim(user_agent='Monolognator')
-    loc = geo.geocode(location)
-    latlon = f'{loc.latitude}, {loc.longitude}'
-    # location = '51.4975,-0.1357'
-    key = os.getenv('darksky_token')
-    params = {'units': 'si'}
-    re = requests.get(f'https://api.darksky.net/forecast/{key}/{latlon}', params=params)
-    results = re.json()
-    return results
-
-
-def weather(bot, update, location=None):
-    """
-    Currenty:
-    ['currently']['time']
-    ['currently']['summary']
-    ['currently']['precipProbability']
-    ['currently']['temperature']
-    Next Hour:
-    ['minutely']['summary']
-    Day:
-    ['hourly']['summary']
-    for i in ['hourly']['data']
-        i['precipProbability'] - get highest
-        i['time']
-        i['summary']
-    Weekly:
-    ['daily']['summary']
-    for i in ['daily']['data']
-        i['time']
-        i['summary']
-        i['precipProbability']
-        i['temperatureHigh']
-        i['temperatureLow']
-    :return:
-    """
-    if update.message.text == '/weather':
-        location = 'London'
-    else:
-        location = update.message.text.split('/weather ')[1]
-    results = get_weather(location)
-    # getting the highest chance of precipitation in the next 24h
-    highest_chance_of_rain = 0
-    day_summary = {}
-    for i in results['hourly']['data']:
-        if i['precipProbability'] > 0 and i['precipProbability'] > highest_chance_of_rain:
-            highest_chance_of_rain = i['precipProbability']
-            day_summary = {'chance': highest_chance_of_rain * 100,
-                           'time': i['time'], 'summary': i['summary']}
-
-    message = f'''Good Morning {update.message.chat.title}, here is your daily forecast:
-    
-    *Current Conditions:*
-    {results['currently']['summary']}
-    Chance of Rain: {results['currently']['precipProbability'] * 100}%, Current Temperature: {results['currently']['temperature']}C
-    
-    *Summary of conditions for the next hour:*
-    {results['minutely']['summary']}
-    
-    *Conditions for the rest of the day:*
-    {results['hourly']['summary']}
-    Highest Chance of Rain: {day_summary['chance']}% at {time.strftime('%l%p', time.localtime(day_summary['time']))}
-    
-    *Summary of conditions for the rest of the week:*
-    {results['daily']['summary']}'''
-
-    bot.send_message(chat_id=update.message.chat_id,
-                     text=f'*Monolognator Weather Report powered by darksky.net*:\n\n{message}',
-                     parse_mode=telegram.ParseMode.MARKDOWN)
-
-
-def vai_chover2():
-    results = get_weather()
-    # getting the highest chance of precipitation in the next 24h
-    rain_threshold = 11
-    highest_chance = 0
-    for i in results['hourly']['data']:
-        day = int(time.strftime('%d', time.localtime(i['time'])))
-        hour = int(time.strftime('%H', time.localtime(i['time'])))
-        chance = i['precipProbability'] * 100
-        if not 6 <= hour <= 20:
-            continue
-        if chance > highest_chance:
-            highest_chance = chance
-    if highest_chance <= 15:
-        return 'Nao vai chover'
-    elif 15 < highest_chance <= 30:
-        return 'Pode chover'
-    elif 30 < highest_chance <= 50:
-        return 'Provavelmente vai chover'
-    return 'Vai chover'
-
-
-
-def vai_chover():
-    results = get_weather()
-    # getting the highest chance of precipitation in the next 24h
-    rain_threshold = 11
-    for i in results['hourly']['data']:
-        day = int(time.strftime('%d', time.localtime(i['time'])))
-        hour = int(time.strftime('%H', time.localtime(i['time'])))
-        chance = i['precipProbability'] * 100
-        if not 6 <= hour <= 20:
-            continue
-        if chance >= rain_threshold:
-            return 'Vai chover'
-    return 'Nao vai chover'
-
-
-def chuva(bot, update, chat_id=None):
-    if chat_id is None:
-        chat_id = update.message.chat_id
-    chove = vai_chover()
-    logger.info(f'Chove? {chove}')
-    if chove == 'Vai chover':
-        gif = get_random_giphy(keyword='sad')
-    else:
-        gif = get_random_giphy(keyword='happy')
-    bot.send_document(chat_id=chat_id,
-                      document=gif, caption=f'Bom dia, {chove} hoje', timeout=5000,
-                      parse_mode=telegram.ParseMode.MARKDOWN)
-
-    # bot.send_message(chat_id=update.message.chat_id,
-    #                  text=f'Bom dia, *{vai_chover()}*',
-    #                  parse_mode=telegram.ParseMode.MARKDOWN)
-
-
-def chuva2(bot, update):
-    bot.send_message(chat_id=update.message.chat_id,
-                     text=f'Bom dia, *{vai_chover2()}*',
-                     parse_mode=telegram.ParseMode.MARKDOWN)
-
-
-def ping(bot, update):
-    gif, title = get_random_giphy(keyword='pong')
-    bot.send_document(chat_id=update.message.chat_id,
-                      document=gif, timeout=100)
-
-
-def get_random_local_gif():
-    gifs = list()
-    for file in os.listdir(gif_path):
-        if file.endswith('.gif'):
-            gifs.append(file)
-    return gif_path + random.choice(gifs)
-
-
-def send_local_gif(bot, update):
-    bot.send_document(chat_id=update.message.chat_id,
-                      document=open(get_random_local_gif(), 'rb'), timeout=500)
-
-
+# MONOLOGNATE STUFF
 def delete_messages(bot, user, chat):
     # Delete messages from group
     for m in set(counter[chat][user]['msg_ids']):
@@ -392,6 +159,242 @@ def handle_counter(bot, update):
             reset_count(chat, user, update)
 
 
+# INLINE QUERY (GIF SEARCH)
+def inlinequery(bot, update):
+    """Handle the inline query."""
+    query = update.inline_query.query
+    print(query)
+    if not update.inline_query.offset:
+        offset = 0
+    else:
+        offset = int(update.inline_query.offset)
+    gifs = search_tenor(query, offset)
+    results = list()
+    for gif in gifs:
+        results.append(telegram.InlineQueryResultGif(
+            id=uuid.uuid4(),
+            type='gif',
+            gif_url=gif['url'],
+            thumb_url=gif['thumb_url']
+        ))
+    update.inline_query.answer(results, timeout=5000, next_offset=int(offset)+40)
+
+
+# GIFS
+def get_random_local_gif():
+    gifs = list()
+    for file in os.listdir(gif_path):
+        if file.endswith('.gif'):
+            gifs.append(file)
+    return gif_path + random.choice(gifs)
+
+
+def send_local_gif(bot, update):
+    bot.send_document(chat_id=update.message.chat_id,
+                      document=open(get_random_local_gif(), 'rb'), timeout=500)
+
+
+# GIPHY
+def search_giphy(keyword, offset=0):
+    gifs = []
+    giphy_token = os.getenv('giphy_token')
+    params = {'api_key': giphy_token, 'rating': 'r',
+              'q': keyword, 'limit': 50, 'offset': offset}
+    re = requests.get(f'https://api.giphy.com/v1/gifs/search', params=params)
+    for g in re.json()['data']:
+        gifs.append({'id': g['id'], 'url': g['images']['downsized_medium']['url'],
+                     'thumb_url': g['images']['preview_gif']['url']})
+    return gifs
+
+
+def get_random_giphy(keyword=None):
+    giphy_token=os.getenv('giphy_token')
+    # offset = 0
+    # gifs = list()
+    params = {'api_key': giphy_token, 'rating': 'r'}
+    if keyword:
+        params.update({'tag': keyword})
+    # for i in range(5):
+    #     gifs.extend(search_tenor(keyword, offset=offset))
+    #     offset+=40
+
+
+    re = requests.get(f'https://api.giphy.com/v1/gifs/random', params=params)
+    gif = re.json()['data']['images']['downsized_medium']['url']
+    logger.info(f'Sending gif: {gif}')
+    # gif = random.choice(gifs)['url']
+    return gif
+
+
+# TENOR
+def search_tenor(keyword, offset=0):
+    gifs = []
+    tenor_token = os.getenv('tenor_token')
+    params = {'key': tenor_token, 'media_filter': 'minimal',
+              'q': keyword, 'limit': 40, 'pos': offset}
+    re = requests.get(f'https://api.tenor.com/v1/search', params=params)
+    for g in re.json()['results']:
+        for m in g['media']:
+            gifs.append({'id': g['id'], 'url': m['gif']['url'],
+                         'thumb_url': m['gif']['preview']})
+    return gifs
+
+
+def get_random_tenor(keyword):
+    tenor_token = os.getenv('tenor_token')
+    params = {'key': tenor_token, 'media_filter': 'minimal',
+              'q': keyword, 'limit': 50, 'pos': random.choice(range(300))}
+    # print(params)
+    re = requests.get(f'https://api.tenor.com/v1/random', params=params)
+    gif = random.choice(re.json()['results'])['media'][0]['mediumgif']['url']
+    print(gif)
+    return gif
+
+
+def send_random_tenor(bot, update, keyword):
+    gif = get_random_tenor(keyword)
+    bot.send_document(chat_id=update.message.chat_id,
+                      document=gif, timeout=100)
+
+
+# WEATHER
+def get_weather(location='London'):
+    logger.info(f'Getting weather for {location}')
+    geo = Nominatim(user_agent='Monolognator')
+    loc = geo.geocode(location)
+    latlon = f'{loc.latitude}, {loc.longitude}'
+    # location = '51.4975,-0.1357'
+    key = os.getenv('darksky_token')
+    params = {'units': 'si'}
+    re = requests.get(f'https://api.darksky.net/forecast/{key}/{latlon}', params=params)
+    results = re.json()
+    return results
+
+
+def weather(bot, update, location=None):
+    """
+    Currenty:
+    ['currently']['time']
+    ['currently']['summary']
+    ['currently']['precipProbability']
+    ['currently']['temperature']
+    Next Hour:
+    ['minutely']['summary']
+    Day:
+    ['hourly']['summary']
+    for i in ['hourly']['data']
+        i['precipProbability'] - get highest
+        i['time']
+        i['summary']
+    Weekly:
+    ['daily']['summary']
+    for i in ['daily']['data']
+        i['time']
+        i['summary']
+        i['precipProbability']
+        i['temperatureHigh']
+        i['temperatureLow']
+    :return:
+    """
+    if update.message.text == '/weather':
+        location = 'London'
+    else:
+        location = update.message.text.split('/weather ')[1]
+    results = get_weather(location)
+    # getting the highest chance of precipitation in the next 24h
+    highest_chance_of_rain = 0
+    day_summary = {}
+    for i in results['hourly']['data']:
+        if i['precipProbability'] > 0 and i['precipProbability'] > highest_chance_of_rain:
+            highest_chance_of_rain = i['precipProbability']
+            day_summary = {'chance': highest_chance_of_rain * 100,
+                           'time': i['time'], 'summary': i['summary']}
+
+    message = f'''Good Morning {update.message.chat.title}, here is your daily forecast:
+    
+    *Current Conditions:*
+    {results['currently']['summary']}
+    Chance of Rain: {results['currently']['precipProbability'] * 100}%, Current Temperature: {results['currently']['temperature']}C
+    
+    *Summary of conditions for the next hour:*
+    {results['minutely']['summary']}
+    
+    *Conditions for the rest of the day:*
+    {results['hourly']['summary']}
+    Highest Chance of Rain: {day_summary['chance']}% at {time.strftime('%Y-%m-%d %l%p', time.localtime(day_summary['time']))}
+    
+    *Summary of conditions for the rest of the week:*
+    {results['daily']['summary']}'''
+
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=f'*Monolognator Weather Report powered by darksky.net*:\n\n{message}',
+                     parse_mode=telegram.ParseMode.MARKDOWN)
+
+
+def vai_chover2():
+    results = get_weather()
+    # getting the highest chance of precipitation in the next 24h
+    rain_threshold = 11
+    highest_chance = 0
+    for i in results['hourly']['data']:
+        day = int(time.strftime('%d', time.localtime(i['time'])))
+        hour = int(time.strftime('%H', time.localtime(i['time'])))
+        chance = i['precipProbability'] * 100
+        if not 6 <= hour <= 20:
+            continue
+        if chance > highest_chance:
+            highest_chance = chance
+    if highest_chance <= 15:
+        return 'Nao vai chover'
+    elif 15 < highest_chance <= 30:
+        return 'Pode chover'
+    elif 30 < highest_chance <= 50:
+        return 'Provavelmente vai chover'
+    return 'Vai chover'
+
+
+def vai_chover():
+    results = get_weather()
+    # getting the highest chance of precipitation in the next 24h
+    rain_threshold = 11
+    for i in results['hourly']['data']:
+        day = int(time.strftime('%d', time.localtime(i['time'])))
+        hour = int(time.strftime('%H', time.localtime(i['time'])))
+        chance = i['precipProbability'] * 100
+        if not 6 <= hour <= 20:
+            continue
+        if chance >= rain_threshold:
+            return 'Vai chover'
+    return 'Nao vai chover'
+
+
+def chuva(bot, update, chat_id=None):
+    if chat_id is None:
+        chat_id = update.message.chat_id
+    # TODO move this somewhere else
+    # Getting results again so we can get the max temperature for the day
+    results = get_weather()
+    max_temp = results['daily']['data'][0]['temperatureMax']
+    chove = vai_chover()
+    logger.info(f'Chove? {chove}')
+    if chove == 'Vai chover':
+        gif = get_random_giphy(keyword='sad')
+    else:
+        gif = get_random_giphy(keyword='happy')
+    bot.send_document(chat_id=chat_id,
+                      document=gif, caption=f'Bom dia, *{chove}* hoje. Max Temp: *{max_temp}*C', timeout=5000,
+                      parse_mode=telegram.ParseMode.MARKDOWN)
+
+    # bot.send_message(chat_id=update.message.chat_id,
+    #                  text=f'Bom dia, *{vai_chover()}*',
+    #                  parse_mode=telegram.ParseMode.MARKDOWN)
+
+
+def chuva2(bot, update):
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=f'Bom dia, *{vai_chover2()}*',
+                     parse_mode=telegram.ParseMode.MARKDOWN)
+
 
 def scheduled_weather(bot, job):
     chove = vai_chover()
@@ -404,6 +407,11 @@ def scheduled_weather(bot, job):
                       document=gif, caption=f'Em Westminster, 6 da manha! Bom dia, {chove} hoje', timeout=1000,
                       parse_mode=telegram.ParseMode.MARKDOWN)
 
+
+def ping(bot, update):
+    gif, title = get_random_giphy(keyword='pong')
+    bot.send_document(chat_id=update.message.chat_id,
+                      document=gif, timeout=100)
 
 
 def error(bot, update, error):

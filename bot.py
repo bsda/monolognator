@@ -302,13 +302,14 @@ def weather(bot, update, location=None):
         location = update.message.text.split('/weather ')[1]
     results = get_weather(location)
     # getting the highest chance of precipitation in the next 24h
-    highest_chance_of_rain = 0
-    day_summary = {}
-    for i in results['hourly']['data']:
-        if i['precipProbability'] > 0 and i['precipProbability'] > highest_chance_of_rain:
-            highest_chance_of_rain = i['precipProbability']
-            day_summary = {'chance': highest_chance_of_rain * 100,
-                           'time': i['time'], 'summary': i['summary']}
+    # highest_chance_of_rain = 0
+    # day_summary = {}
+    # for i in results['hourly']['data']:
+    #     if i['precipProbability'] > 0 and i['precipProbability'] > highest_chance_of_rain:
+    #         highest_chance_of_rain = i['precipProbability']
+    #         day_summary = {'chance': highest_chance_of_rain * 100,
+    #                        'time': i['time'], 'summary': i['summary']}
+    chance_of_rain, time_of_rain = chance_of_rain_today(results)
 
     message = f'''Good Morning {update.message.chat.title}, here is your daily forecast:
     
@@ -321,7 +322,7 @@ def weather(bot, update, location=None):
     
     *Conditions for the rest of the day:*
     {results['hourly']['summary']}
-    Highest Chance of Rain: {day_summary['chance']}% at {time.strftime('%Y-%m-%d %l%p', time.localtime(day_summary['time']))}
+    Highest Chance of Rain: {chance_of_rain}% at {time_of_rain}
     
     *Summary of conditions for the rest of the week:*
     {results['daily']['summary']}'''
@@ -331,24 +332,36 @@ def weather(bot, update, location=None):
                      parse_mode=telegram.ParseMode.MARKDOWN)
 
 
+def chance_of_rain_today(results):
+    # only until midnight today
+    logger.info('Getting chance of rain today')
+    max_time = datetime.datetime.combine(datetime.datetime.today(), datetime.time.max).timestamp()
+    now = datetime.datetime.now().timestamp()
+    highest_chance = 0
+    highest_chance_time = None
+    for i in results['hourly']['data']:
+        if now <= i['time'] < max_time:
+            hour = time.strftime('%l%p', time.localtime(i['time']))
+            chance = i['precipProbability'] * 100
+            if chance > highest_chance:
+                highest_chance = chance
+                highest_chance_time = hour
+    if highest_chance > 0:
+        return highest_chance, highest_chance_time
+    else:
+        return 0, None
+
+
 def vai_chover2():
     results = get_weather()
     # getting the highest chance of precipitation in the next 24h
     rain_threshold = 11
-    highest_chance = 0
-    for i in results['hourly']['data']:
-        day = int(time.strftime('%d', time.localtime(i['time'])))
-        hour = int(time.strftime('%H', time.localtime(i['time'])))
-        chance = i['precipProbability'] * 100
-        if not 6 <= hour <= 20:
-            continue
-        if chance > highest_chance:
-            highest_chance = chance
-    if highest_chance <= 15:
+    chance_of_rain, time_of_rain = chance_of_rain_today(results)
+    if chance_of_rain <= 15:
         return 'Nao vai chover'
-    elif 15 < highest_chance <= 30:
+    elif 15 < chance_of_rain <= 30:
         return 'Pode chover'
-    elif 30 < highest_chance <= 50:
+    elif 30 < chance_of_rain <= 50:
         return 'Provavelmente vai chover'
     return 'Vai chover'
 
@@ -357,14 +370,9 @@ def vai_chover():
     results = get_weather()
     # getting the highest chance of precipitation in the next 24h
     rain_threshold = 11
-    for i in results['hourly']['data']:
-        day = int(time.strftime('%d', time.localtime(i['time'])))
-        hour = int(time.strftime('%H', time.localtime(i['time'])))
-        chance = i['precipProbability'] * 100
-        if not 6 <= hour <= 20:
-            continue
-        if chance >= rain_threshold:
-            return 'Vai chover'
+    chance_of_rain, time_of_rain = chance_of_rain_today(results)
+    if chance_of_rain >= rain_threshold:
+        return 'Vai chover'
     return 'Nao vai chover'
 
 
@@ -382,18 +390,30 @@ def chuva(bot, update, chat_id=None):
     else:
         gif = get_random_giphy(keyword='happy')
     bot.send_document(chat_id=chat_id,
-                      document=gif, caption=f'Bom dia, *{chove}* hoje. Max Temp: *{max_temp}*C', timeout=5000,
+                      document=gif, caption=f'Bom dia, *{chove}* hoje.\nMax Temp: *{max_temp}*C', timeout=5000,
                       parse_mode=telegram.ParseMode.MARKDOWN)
 
-    # bot.send_message(chat_id=update.message.chat_id,
-    #                  text=f'Bom dia, *{vai_chover()}*',
-    #                  parse_mode=telegram.ParseMode.MARKDOWN)
 
-
-def chuva2(bot, update):
-    bot.send_message(chat_id=update.message.chat_id,
-                     text=f'Bom dia, *{vai_chover2()}*',
-                     parse_mode=telegram.ParseMode.MARKDOWN)
+def chuva2(bot, update, chat_id=None):
+    if chat_id is None:
+        chat_id = update.message.chat_id
+    # TODO move this somewhere else
+    # Getting results again so we can get the max temperature for the day
+    results = get_weather()
+    max_temp = results['daily']['data'][0]['temperatureMax']
+    chove = vai_chover2()
+    logger.info(f'Chove? {chove}')
+    if chove == 'Nao vai chover':
+        gif = get_random_giphy(keyword='happy')
+    elif chove == 'Pode chover':
+        gif = get_random_giphy(keyword='unsure')
+    elif chove == 'Provavelmente vai chover':
+        gif = get_random_giphy(keyword='probably')
+    else:
+        gif = get_random_giphy(keyword='sad')
+    bot.send_document(chat_id=chat_id,
+                      document=gif, caption=f'Bom dia, *{chove}* hoje.\nMax Temp: *{max_temp}*C', timeout=5000,
+                      parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def scheduled_weather(bot, job):

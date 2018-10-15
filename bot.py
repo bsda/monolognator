@@ -461,6 +461,7 @@ def scheduled_weather(bot, job):
                       parse_mode=telegram.ParseMode.MARKDOWN)
 
 
+
 def beer(bot, update):
     client_id = os.getenv('untappd_client_id') 
     client_secret = os.getenv('untappd_client_secret')
@@ -492,6 +493,57 @@ def beer(bot, update):
                      parse_mode=telegram.ParseMode.MARKDOWN, timeout=5000)
 
 
+def ratebeer(bot, update):
+    api_key = os.getenv('ratebeer_api_key')
+    endpoint = 'https://api.ratebeer.com/v1/api/graphql'
+
+    headers = {'content-type': 'application/json',
+               'accept': 'application/json',
+               'x-api-key': api_key }
+
+    beer_search = update.message.text.split('/ratebeer ')[1]
+    query = f'''
+    {{
+        beerSearch(query: "{beer_search}") {{
+            items {{
+                id
+                name
+                brewer {{
+                    name 
+                }}
+                description
+                abv
+                style {{
+                    name
+                }}
+                styleScore
+                averageRating
+                imageUrl
+            }}
+        }}
+    }}
+    '''
+    results = requests.post(endpoint, headers=headers, json={'query': query})
+    beer = results.json()['data']['beerSearch']['items'][0]
+
+
+    beer_name = beer['name']
+    beer_image = beer['imageUrl']
+    beer_abv = round(beer['abv'], 2)
+    beer_rating = round(beer['averageRating'], 2)
+    beer_style = beer['style']['name']
+    beer_style_score = round(beer['styleScore'], 2)
+    beer_description = beer['description']
+    brewery = beer['brewer']['name']
+
+    bot.send_photo(chat_id=update.message.chat_id, photo=beer_image)
+    bot.send_message(chat_id=update.message.chat_id,
+                        text=f'*{beer_name}* by {brewery}\n'
+                          f'{beer_style} with {beer_abv}% of alcohol\n'
+                          f'Style Score: {beer_style_score}, Rating: *{beer_rating}*\n'
+                          f'Description:\n'
+                          f'{beer_description}',
+                          parse_mode=telegram.ParseMode.MARKDOWN, timeout=15000)
 
 
 def ping(bot, update):
@@ -516,6 +568,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('chuva', chuva))
     updater.dispatcher.add_handler(CommandHandler('chuva2', chuva2))
     updater.dispatcher.add_handler(CommandHandler('beer', beer))
+    updater.dispatcher.add_handler(CommandHandler('ratebeer', ratebeer))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     updater.dispatcher.add_error_handler(error)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))

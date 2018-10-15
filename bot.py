@@ -9,6 +9,7 @@ import uuid
 import time
 import datetime
 from geopy import Nominatim
+import untappd
 
 
 logging.basicConfig(level=logging.INFO,
@@ -461,6 +462,90 @@ def scheduled_weather(bot, job):
 
 
 
+def beer(bot, update):
+    client_id = os.getenv('untappd_client_id') 
+    client_secret = os.getenv('untappd_client_secret')
+
+    beer_search = update.message.text.split('/beer ')[1]
+    client = untappd.Untappd(client_id=client_id,
+                             client_secret=client_secret,
+                             redirect_url=None)
+
+    results = client.search.beer(q=beer_search)
+    beer_id = results['response']['beers']['items'][0]['beer']['bid']
+    beer = client.beer.info(beer_id)
+
+    beer_name = beer['response']['beer']['beer_name']
+    beer_label = beer['response']['beer']['beer_label']
+    beer_abv = beer['response']['beer']['beer_abv']
+    beer_rating = beer['response']['beer']['rating_score']
+    beer_style = beer['response']['beer']['beer_style']
+    beer_description = beer['response']['beer']['beer_description']
+    rating_count = beer['response']['beer']['rating_count']
+    brewery = beer['response']['beer']['brewery']['brewery_name']
+
+    bot.send_message(chat_id=update.message.chat_id, photo=beer_label,
+                     text=f'*{beer_name}* by {brewery}\n'
+                          f'A {beer_style} with {beer_abv}% of alcohol\n'
+                          f'Ratings: {rating_count}, Score: *{beer_rating}*\n'
+                          f'Description:\n'
+                          f'{beer_description}',
+                     parse_mode=telegram.ParseMode.MARKDOWN, timeout=5000)
+
+
+def ratebeer(bot, update):
+    api_key = os.getenv('ratebeer_api_key')
+    endpoint = 'https://api.ratebeer.com/v1/api/graphql'
+
+    headers = {'content-type': 'application/json',
+               'accept': 'application/json',
+               'x-api-key': api_key }
+
+    beer_search = update.message.text.split('/ratebeer ')[1]
+    query = f'''
+    {{
+        beerSearch(query: "{beer_search}") {{
+            items {{
+                id
+                name
+                brewer {{
+                    name 
+                }}
+                description
+                abv
+                style {{
+                    name
+                }}
+                styleScore
+                averageRating
+                imageUrl
+            }}
+        }}
+    }}
+    '''
+    results = requests.post(endpoint, headers=headers, json={'query': query})
+    beer = results.json()['data']['beerSearch']['items'][0]
+
+
+    beer_name = beer['name']
+    beer_image = beer['imageUrl']
+    beer_abv = round(beer['abv'], 2)
+    beer_rating = round(beer['averageRating'], 2)
+    beer_style = beer['style']['name']
+    beer_style_score = round(beer['styleScore'], 2)
+    beer_description = beer['description']
+    brewery = beer['brewer']['name']
+
+    bot.send_photo(chat_id=update.message.chat_id, photo=beer_image)
+    bot.send_message(chat_id=update.message.chat_id,
+                        text=f'*{beer_name}* by {brewery}\n'
+                          f'{beer_style} with {beer_abv}% of alcohol\n'
+                          f'Style Score: {beer_style_score}, Rating: *{beer_rating}*\n'
+                          f'Description:\n'
+                          f'{beer_description}',
+                          parse_mode=telegram.ParseMode.MARKDOWN, timeout=15000)
+
+
 def ping(bot, update):
     gif, title = get_random_giphy(keyword='pong')
     bot.send_document(chat_id=update.message.chat_id,
@@ -482,6 +567,8 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('weather', weather))
     updater.dispatcher.add_handler(CommandHandler('chuva', chuva))
     updater.dispatcher.add_handler(CommandHandler('chuva2', chuva2))
+    updater.dispatcher.add_handler(CommandHandler('beer', beer))
+    updater.dispatcher.add_handler(CommandHandler('ratebeer', ratebeer))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     updater.dispatcher.add_error_handler(error)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))

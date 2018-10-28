@@ -10,6 +10,7 @@ import time
 import datetime
 from geopy import Nominatim
 import untappd
+import beer
 
 
 logging.basicConfig(level=logging.INFO,
@@ -341,7 +342,7 @@ def chance_of_rain_today(results):
     for i in results['hourly']['data']:
         if now <= i['time'] < max_time:
             hour = time.strftime('%l%p', time.localtime(i['time']))
-            chance = i['precipProbability'] * 100
+            chance = round(i['precipProbability'] * 100, 2)
             if chance > highest_chance:
                 highest_chance = chance
                 highest_chance_time = hour
@@ -461,36 +462,61 @@ def scheduled_weather(bot, job):
                       parse_mode=telegram.ParseMode.MARKDOWN)
 
 
+def beer_rating(bot, update):
+    search = update.message.text.split('/beer ')[1]
+    rating = beer.beer(search)
+    message = '*___Untappd:___*\n'
+    message += f'*{rating["u_name"]}* by {rating["u_brewery"]}\n'
+    message += f'*{rating["u_style"]}*, abv: {rating["u_abv"]}%\n'
+    message += f'Rating: *{rating["u_rating"]}*, Count: {rating["u_count"]}\n\n'
+    message += '*___Ratebeer:___*\n'
+    message += f'*{rating["r_name"]}* by {rating["r_brewery"]}\n'
+    message += f'*{rating["r_style"]}*, abv: {rating["r_abv"]}%\n'
+    message += f'Rating: *{rating["r_rating"]}*, Count: {rating["r_count"]},' \
+               f' Style Score: {rating["r_style_score"]}\n'
+    image = rating['image']
+    bot.send_photo(chat_id=update.message.chat_id, photo=image)
+    try:
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=message, parse_mode=telegram.ParseMode.MARKDOWN,
+                         timeout=150)
+    except TimeoutError:
+        time.sleep(2)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=message, parse_mode=telegram.ParseMode.MARKDOWN,
+                         timeout=150)
 
-def beer(bot, update):
-    client_id = os.getenv('untappd_client_id') 
-    client_secret = os.getenv('untappd_client_secret')
 
-    beer_search = update.message.text.split('/beer ')[1]
-    client = untappd.Untappd(client_id=client_id,
-                             client_secret=client_secret,
-                             redirect_url=None)
 
-    results = client.search.beer(q=beer_search)
-    beer_id = results['response']['beers']['items'][0]['beer']['bid']
-    beer = client.beer.info(beer_id)
-
-    beer_name = beer['response']['beer']['beer_name']
-    beer_label = beer['response']['beer']['beer_label']
-    beer_abv = beer['response']['beer']['beer_abv']
-    beer_rating = beer['response']['beer']['rating_score']
-    beer_style = beer['response']['beer']['beer_style']
-    beer_description = beer['response']['beer']['beer_description']
-    rating_count = beer['response']['beer']['rating_count']
-    brewery = beer['response']['beer']['brewery']['brewery_name']
-
-    bot.send_message(chat_id=update.message.chat_id, photo=beer_label,
-                     text=f'*{beer_name}* by {brewery}\n'
-                          f'A {beer_style} with {beer_abv}% of alcohol\n'
-                          f'Ratings: {rating_count}, Score: *{beer_rating}*\n'
-                          f'Description:\n'
-                          f'{beer_description}',
-                     parse_mode=telegram.ParseMode.MARKDOWN, timeout=5000)
+# def beer(bot, update):
+#     client_id = os.getenv('untappd_client_id')
+#     client_secret = os.getenv('untappd_client_secret')
+#
+#     beer_search = update.message.text.split('/beer ')[1]
+#     client = untappd.Untappd(client_id=client_id,
+#                              client_secret=client_secret,
+#                              redirect_url=None)
+#
+#     results = client.search.beer(q=beer_search)
+#     beer_id = results['response']['beers']['items'][0]['beer']['bid']
+#     beer = client.beer.info(beer_id)
+#
+#     beer_name = beer['response']['beer']['beer_name']
+#     beer_label = beer['response']['beer']['beer_label']
+#     beer_abv = beer['response']['beer']['beer_abv']
+#     beer_rating = beer['response']['beer']['rating_score']
+#     beer_style = beer['response']['beer']['beer_style']
+#     beer_description = beer['response']['beer']['beer_description']
+#     rating_count = beer['response']['beer']['rating_count']
+#     brewery = beer['response']['beer']['brewery']['brewery_name']
+#
+#     bot.send_message(chat_id=update.message.chat_id, photo=beer_label,
+#                      text=f'*{beer_name}* by {brewery}\n'
+#                           f'A {beer_style} with {beer_abv}% of alcohol\n'
+#                           f'Ratings: {rating_count}, Score: *{beer_rating}*\n'
+#                           f'Description:\n'
+#                           f'{beer_description}',
+#                      parse_mode=telegram.ParseMode.MARKDOWN, timeout=5000)
 
 
 def ratebeer(bot, update):
@@ -499,7 +525,7 @@ def ratebeer(bot, update):
 
     headers = {'content-type': 'application/json',
                'accept': 'application/json',
-               'x-api-key': api_key }
+               'x-api-key': api_key}
 
     beer_search = update.message.text.split('/ratebeer ')[1]
     query = f'''
@@ -559,7 +585,7 @@ def error(bot, update, error):
 
 def main():
 
-    updater = Updater(os.getenv('telegram_token'))
+    updater = Updater(os.getenv('telegram_token'), request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('ping', ping))
     updater.dispatcher.add_handler(CommandHandler('limit', query_limit))
@@ -567,7 +593,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('weather', weather))
     updater.dispatcher.add_handler(CommandHandler('chuva', chuva))
     updater.dispatcher.add_handler(CommandHandler('chuva2', chuva2))
-    updater.dispatcher.add_handler(CommandHandler('beer', beer))
+    updater.dispatcher.add_handler(CommandHandler('beer', beer_rating))
     updater.dispatcher.add_handler(CommandHandler('ratebeer', ratebeer))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     updater.dispatcher.add_error_handler(error)

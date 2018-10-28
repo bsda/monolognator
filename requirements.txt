@@ -1,3 +1,4 @@
+Pillow
 python-telegram-bot
 requests
 geopy

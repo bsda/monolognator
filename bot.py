@@ -6,7 +6,6 @@ import os
 import time
 import datetime
 import beer
-import links
 from gif import get_random_giphy, search_tenor, inlinequery
 from monologue import query_limit, set_limit, handle_counter
 from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather
@@ -76,9 +75,9 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('beer', beer_rating))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     updater.dispatcher.add_error_handler(error)
-    updater.dispatcher.add_handler(MessageHandler(
-        Filters.text & (Filters.entity(MessageEntity.URL) |
-                        Filters.entity(MessageEntity.TEXT_LINK)), links.counter))
+    # updater.dispatcher.add_handler(MessageHandler(
+    #     Filters.text & (Filters.entity(MessageEntity.URL) |
+    #                     Filters.entity(MessageEntity.TEXT_LINK)), links.counter))
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(5))

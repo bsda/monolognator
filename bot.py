@@ -90,7 +90,8 @@ def main():
                               url_path=token,
                               key='private.key',
                               cert='cert.pem',
-                              webhook_url=f'{webhook_url}/{token}')
+                              webhook_url=f'{webhook_url}/{token}',
+                              clean=True)
     logger.info('Starting Monolognator...')
     updater.idle()
 

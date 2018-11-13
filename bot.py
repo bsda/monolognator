@@ -62,21 +62,10 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
-def start_bot():
-    method = os.getenv('update_method') or 'polling'
-    updater = Updater(os.getenv('telegram_token'), request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
-
-    updater.start_webhook(listen='0.0.0.0',
-                          port=8443,
-                          url_path='TOKEN',
-                          key='private.key',
-                          cert='cert.pem',
-                          webhook_url='https://example.com:8443/TOKEN')
-
-
 def main():
     method = os.getenv('update_method') or 'polling'
-    updater = Updater(os.getenv('telegram_token'), request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
+    token = os.getenv('telegram_token')
+    updater = Updater(token, request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('ping', ping))
     updater.dispatcher.add_handler(CommandHandler('limit', query_limit))
@@ -96,12 +85,13 @@ def main():
     if method == 'polling':
         updater.start_polling(clean=True)
     else:
+        webhook_url = os.getenv('webhook_url')
         updater.start_webhook(listen='0.0.0.0',
                               port=8443,
-                              url_path=os.getenv('telegram_token'),
+                              url_path=token,
                               key='private.key',
                               cert='cert.pem',
-                              webhook_url=f'https://example.com:8443/{os.getenv("telegram_token")}')
+                              webhook_url=f'{webhook_url}/{token}')
     logger.info('Starting Monolognator...')
     updater.idle()
 

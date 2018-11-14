@@ -116,13 +116,9 @@ def monolognate(chat, user, bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text='*Monologue by {}*:\n\n`{}`'.format(
                          update.message.from_user.first_name,
-<<<<<<< HEAD
                          "\n".join(counter[chat][user]['msgs'])),
                      parse_mode=telegram.ParseMode.MARKDOWN,
                      timeout=15)
-=======
-                         "\n".join(counter[chat][user]['msgs'])), parse_mode=telegram.ParseMode.MARKDOWN)
->>>>>>> 6ee0907cf4742643246e7f6a5c415a2f9ac7be2f
     reset_count(chat, user, update)
 
 

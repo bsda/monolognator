@@ -56,7 +56,7 @@ def set_limit(bot, update):
 def delete_messages(bot, user, chat):
     # Delete messages from group
     for m in set(counter[chat][user]['msg_ids']):
-        bot.delete_message(chat_id=chat, message_id=m, timeout=15)
+        bot.delete_message(chat_id=chat, message_id=m)
 
 
 def add_count(chat, user, update):
@@ -116,9 +116,13 @@ def monolognate(chat, user, bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text='*Monologue by {}*:\n\n`{}`'.format(
                          update.message.from_user.first_name,
+<<<<<<< HEAD
                          "\n".join(counter[chat][user]['msgs'])),
                      parse_mode=telegram.ParseMode.MARKDOWN,
                      timeout=15)
+=======
+                         "\n".join(counter[chat][user]['msgs'])), parse_mode=telegram.ParseMode.MARKDOWN)
+>>>>>>> 6ee0907cf4742643246e7f6a5c415a2f9ac7be2f
     reset_count(chat, user, update)
 
 

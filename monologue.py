@@ -111,7 +111,8 @@ def hit_limit(chat, user, update):
 
 
 def monolognate(chat, user, bot, update):
-
+    logger.info(f'Monologue by {update.message.from_user.first_name}')
+    monologue = '\n'.join(counter[chat][user]['msgs'])
     delete_messages(bot, user, chat)
     send_random_tenor(bot, update, 'tsunami')
 
@@ -119,7 +120,7 @@ def monolognate(chat, user, bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
-                             "\n".join(counter[chat][user]['msgs'])),
+                             monologue),
                          parse_mode=telegram.ParseMode.MARKDOWN,
                          timeout=15)
     except BadRequest as e:
@@ -127,7 +128,7 @@ def monolognate(chat, user, bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
-                             "\n".join(counter[chat][user]['msgs'])),
+                             monologue),
                          parse_mode=telegram.ParseMode.MARKDOWN,
                          timeout=15)
     except RetryAfter as e:
@@ -136,7 +137,7 @@ def monolognate(chat, user, bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
-                             "\n".join(counter[chat][user]['msgs'])),
+                             monologue),
                          parse_mode=telegram.ParseMode.MARKDOWN,
                          timeout=15)
     except TimedOut as e:
@@ -145,7 +146,7 @@ def monolognate(chat, user, bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
-                             "\n".join(counter[chat][user]['msgs'])),
+                             monologue),
                          parse_mode=telegram.ParseMode.MARKDOWN,
                          timeout=15)
     except Unauthorized as e:
@@ -154,7 +155,7 @@ def monolognate(chat, user, bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
-                             "\n".join(counter[chat][user]['msgs'])),
+                             monologue),
                          parse_mode=telegram.ParseMode.MARKDOWN,
                          timeout=15)
     except NetworkError as e:
@@ -163,7 +164,7 @@ def monolognate(chat, user, bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
-                             "\n".join(counter[chat][user]['msgs'])),
+                             monologue),
                          parse_mode=telegram.ParseMode.MARKDOWN,
                          timeout=15)
     except Exception as e:
@@ -172,7 +173,7 @@ def monolognate(chat, user, bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
-                             "\n".join(counter[chat][user]['msgs'])),
+                             monologue),
                          parse_mode=telegram.ParseMode.MARKDOWN,
                          timeout=15)
         # Send monologue back as a single message

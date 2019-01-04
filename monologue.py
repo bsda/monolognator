@@ -3,6 +3,8 @@ import telegram
 import random
 import logging
 import re
+from time import sleep
+from telegram.error import *
 
 from gif import send_random_tenor
 
@@ -112,14 +114,70 @@ def monolognate(chat, user, bot, update):
 
     delete_messages(bot, user, chat)
     send_random_tenor(bot, update, 'tsunami')
-    # Send monologue back as a single message
-    bot.send_message(chat_id=update.message.chat_id,
-                     text='*Monologue by {}*:\n\n`{}`'.format(
-                         update.message.from_user.first_name,
-                         "\n".join(counter[chat][user]['msgs'])),
-                     parse_mode=telegram.ParseMode.MARKDOWN,
-                     timeout=15)
-    reset_count(chat, user, update)
+
+    try:
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='*Monologue by {}*:\n\n`{}`'.format(
+                             update.message.from_user.first_name,
+                             "\n".join(counter[chat][user]['msgs'])),
+                         parse_mode=telegram.ParseMode.MARKDOWN,
+                         timeout=15)
+    except BadRequest as e:
+        logger.info(f'BadRequest: {e}')
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='*Monologue by {}*:\n\n`{}`'.format(
+                             update.message.from_user.first_name,
+                             "\n".join(counter[chat][user]['msgs'])),
+                         parse_mode=telegram.ParseMode.MARKDOWN,
+                         timeout=15)
+    except RetryAfter as e:
+        logger.info(f'RetryAfter: {e.retry_after}')
+        sleep(int(e.retry_after))
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='*Monologue by {}*:\n\n`{}`'.format(
+                             update.message.from_user.first_name,
+                             "\n".join(counter[chat][user]['msgs'])),
+                         parse_mode=telegram.ParseMode.MARKDOWN,
+                         timeout=15)
+    except TimedOut as e:
+        logger.info(f'TimedOut: {e}')
+        sleep(1)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='*Monologue by {}*:\n\n`{}`'.format(
+                             update.message.from_user.first_name,
+                             "\n".join(counter[chat][user]['msgs'])),
+                         parse_mode=telegram.ParseMode.MARKDOWN,
+                         timeout=15)
+    except Unauthorized as e:
+        logger.info(f'Unauthorized: {e}')
+        sleep(0.25)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='*Monologue by {}*:\n\n`{}`'.format(
+                             update.message.from_user.first_name,
+                             "\n".join(counter[chat][user]['msgs'])),
+                         parse_mode=telegram.ParseMode.MARKDOWN,
+                         timeout=15)
+    except NetworkError as e:
+        logger.info(f'NetworkError: {e}')
+        sleep(1)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='*Monologue by {}*:\n\n`{}`'.format(
+                             update.message.from_user.first_name,
+                             "\n".join(counter[chat][user]['msgs'])),
+                         parse_mode=telegram.ParseMode.MARKDOWN,
+                         timeout=15)
+    except Exception as e:
+        logger.info(f'Some Shit happened: {e}')
+        sleep(1)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='*Monologue by {}*:\n\n`{}`'.format(
+                             update.message.from_user.first_name,
+                             "\n".join(counter[chat][user]['msgs'])),
+                         parse_mode=telegram.ParseMode.MARKDOWN,
+                         timeout=15)
+        # Send monologue back as a single message
+    finally:
+        reset_count(chat, user, update)
 
 
 def handle_counter(bot, update):

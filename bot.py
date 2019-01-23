@@ -6,6 +6,7 @@ import os
 import time
 import datetime
 import beer
+import re
 from gif import get_random_giphy, search_tenor, inlinequery, informer
 from monologue import query_limit, set_limit, handle_counter
 from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather
@@ -74,7 +75,8 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('chuva2', chuva2))
     updater.dispatcher.add_handler(CommandHandler('beer', beer_rating))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
-    updater.dispatcher.add_handler(RegexHandler('.*informer.*', informer))
+    informer_regex = re.compile('.*informer.*', re.IGNORECASE)
+    updater.dispatcher.add_handler(RegexHandler(informer_regex, informer))
     updater.dispatcher.add_error_handler(error)
     # updater.dispatcher.add_handler(MessageHandler(
     #     Filters.text & (Filters.entity(MessageEntity.URL) |

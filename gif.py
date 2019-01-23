@@ -99,6 +99,6 @@ def informer(bot, update):
     params = {'key': tenor_token, 'ids': 13141855}
     # print(params)
     re = requests.get(f'https://api.tenor.com/v1/gifs', params=params)
-    gif = re.json #()['results']['media'][0]['mediumgif']['url']
+    gif = re.json()['results'][0]['media'][0]['mediumgif']['url']
     logger.info(gif)
     bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=1000)

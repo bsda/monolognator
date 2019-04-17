@@ -7,9 +7,9 @@ import time
 import datetime
 import beer
 import re
-from gif import get_random_giphy, search_tenor, inlinequery, informer
+from gif import get_random_giphy, search_tenor, inlinequery, informer, lula
 from monologue import query_limit, set_limit, handle_counter
-from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather
+from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather, scheduled_chuva
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(funcName)s - %(levelname)s - %(message)s')
@@ -73,10 +73,13 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('weather', send_weather))
     updater.dispatcher.add_handler(CommandHandler('chuva', chuva))
     updater.dispatcher.add_handler(CommandHandler('chuva2', chuva2))
+    updater.dispatcher.add_handler(CommandHandler('chuva3', scheduled_chuva))
     updater.dispatcher.add_handler(CommandHandler('beer', beer_rating))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     informer_regex = re.compile('.*informer.*', re.IGNORECASE)
+    lula_regex = re.compile('.*lula.*', re.IGNORECASE)
     updater.dispatcher.add_handler(RegexHandler(informer_regex, informer))
+    updater.dispatcher.add_handler(RegexHandler(lula_regex, lula))
     updater.dispatcher.add_error_handler(error)
     # updater.dispatcher.add_handler(MessageHandler(
     #     Filters.text & (Filters.entity(MessageEntity.URL) |

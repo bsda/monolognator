@@ -89,7 +89,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('weather', send_weather))
     updater.dispatcher.add_handler(CommandHandler('chuva', chuva))
     updater.dispatcher.add_handler(CommandHandler('chuva2', chuva2))
-    updater.dispatcher.add_handler(CommandHandler('chuva3', scheduled_chuva))
+    # updater.dispatcher.add_handler(CommandHandler('chuva3', scheduled_chuva))
     updater.dispatcher.add_handler(CommandHandler('beer', beer_rating))
     updater.dispatcher.add_handler(CommandHandler('dry', dry_score_message))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))

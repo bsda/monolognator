@@ -7,6 +7,8 @@ import time
 import datetime
 import beer
 import re
+import json
+from operator import itemgetter
 from gif import get_random_giphy, search_tenor, inlinequery, informer, lula
 from monologue import query_limit, set_limit, handle_counter
 from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather, scheduled_chuva
@@ -51,6 +53,20 @@ def beer_rating(bot, update):
                          timeout=150)
 
 
+def dry_score_message(bot, update):
+    users = json.loads(os.environ['untappd_users'])
+    score = beer.get_dry_scores(users)
+    sorted_score = sorted(score, key=itemgetter('days'), reverse=True)
+    message = '*Current Dry Scores*:\n\n'
+    sorted_score[0]['brewery'] = f"{sorted_score[0]['brewery']} 🏆"
+    for s in sorted_score:
+        days_s = 'day' if s['days'] == 1 else 'days'
+        message += f" `{s['user']}`: *{s['days']}* - *{s['beer']}* by {s['brewery']}\n"
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=message, parse_mode=telegram.ParseMode.MARKDOWN,
+                     timeout=150)
+
+
 def ping(bot, update):
     gif = get_random_giphy(keyword='pong')
     bot.send_document(chat_id=update.message.chat_id,
@@ -75,6 +91,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('chuva2', chuva2))
     updater.dispatcher.add_handler(CommandHandler('chuva3', scheduled_chuva))
     updater.dispatcher.add_handler(CommandHandler('beer', beer_rating))
+    updater.dispatcher.add_handler(CommandHandler('dry', dry_score_message))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     informer_regex = re.compile('.*informer.*', re.IGNORECASE)
     lula_regex = re.compile('.*lula.*', re.IGNORECASE)

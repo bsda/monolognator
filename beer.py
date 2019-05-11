@@ -3,6 +3,8 @@ import untappd
 import requests
 from operator import itemgetter
 import logging
+import datetime
+import pytz
 logger = logging.getLogger(__name__)
 
 
@@ -79,6 +81,35 @@ def get_ratebeer(search):
                      'brewery': result['brewer']['name']}
 
     return ratebeer_beer
+
+
+def get_latest_check_in(user):
+    logger.info(f'Getting {user} check-ins')
+    client_id = os.getenv('untappd_client_id')
+    client_secret = os.getenv('untappd_client_secret')
+    client = untappd.Untappd(client_id=client_id,
+                             client_secret=client_secret,
+                             redirect_url=None)
+
+    re = client.user.checkins(user)
+    check_in =  re.get('response').get('checkins').get('items')[0]
+    check_in_date = datetime.datetime.strptime(check_in.get('created_at'), '%a, %d %b %Y %H:%M:%S %z')
+    today = datetime.datetime.today().replace(tzinfo=pytz.utc)
+    days = (today - check_in_date).days
+    latest_check_in = {
+        'user': user,
+        'days': days,
+        'beer': check_in.get('beer').get('beer_name'),
+        'brewery': check_in.get('brewery').get('brewery_name')
+    }
+    return latest_check_in
+
+
+def get_dry_scores(users):
+    scores = list()
+    for u in users:
+        scores.append(get_latest_check_in(u))
+    return scores
 
 
 def beer(search):

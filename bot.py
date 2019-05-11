@@ -11,7 +11,7 @@ import json
 from operator import itemgetter
 from gif import get_random_giphy, search_tenor, inlinequery, informer, lula
 from monologue import query_limit, set_limit, handle_counter
-from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather, scheduled_chuva
+from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(funcName)s - %(levelname)s - %(message)s')

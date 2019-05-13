@@ -67,6 +67,19 @@ def dry_score_message(bot, update):
                      timeout=150)
 
 
+def wet_score_message(bot, update):
+    users = json.loads(os.environ['untappd_users'])
+    wet_score = beer.get_wet_scores(users)
+    sorted_score = sorted(wet_score, key=itemgetter('score'), reverse=True)
+    message = '*Last Week Wet Scores*:\n\n'
+    sorted_score[0]['user'] = f"{sorted_score[0]['user']} 🏆"
+    for s in sorted_score:
+        message += f" `{s['user']}`: *{s['score']}* check-ins\n"
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=message, parse_mode=telegram.ParseMode.MARKDOWN,
+                     timeout=150)
+
+
 def ping(bot, update):
     gif = get_random_giphy(keyword='pong')
     bot.send_document(chat_id=update.message.chat_id,
@@ -92,6 +105,7 @@ def main():
     # updater.dispatcher.add_handler(CommandHandler('chuva3', scheduled_chuva))
     updater.dispatcher.add_handler(CommandHandler('beer', beer_rating))
     updater.dispatcher.add_handler(CommandHandler('dry', dry_score_message))
+    updater.dispatcher.add_handler(CommandHandler('wet', wet_score_message))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     informer_regex = re.compile('.*informer.*', re.IGNORECASE)
     lula_regex = re.compile('.*lula.*', re.IGNORECASE)

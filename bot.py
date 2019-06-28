@@ -35,13 +35,6 @@ def beer_rating(bot, update):
     message += f'*{rating["u_name"]}* by {rating["u_brewery"]}\n'
     message += f'*{rating["u_style"]}*, abv: {rating["u_abv"]}%\n'
     message += f'Rating: *{rating["u_rating"]}*, Count: {rating["u_count"]}\n\n'
-    message += '*___Ratebeer:___*\n'
-    message += f'*{rating["r_name"]}* by {rating["r_brewery"]}\n'
-    message += f'*{rating["r_style"]}*, abv: {rating["r_abv"]}%\n'
-    message += f'Rating: *{rating["r_rating"]}*, Count: {rating["r_count"]},' \
-               f' Style Score: {rating["r_style_score"]}\n'
-    image = rating['image']
-    bot.send_photo(chat_id=update.message.chat_id, photo=image)
     try:
         bot.send_message(chat_id=update.message.chat_id,
                          text=message, parse_mode=telegram.ParseMode.MARKDOWN,

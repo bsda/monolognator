@@ -92,6 +92,13 @@ def send_random_tenor(bot, update, keyword):
                       document=gif, timeout=100)
 
 
+
+
+
+
+
+
+
 def informer(bot, update):
     # https://media1.tenor.com/images/9c58132c8e37a5d7f5a999332667967b/tenor.gif?itemid=13141855
     # https: // api.tenor.com / v1 / gifs? < parameters >

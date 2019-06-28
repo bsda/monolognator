@@ -80,6 +80,15 @@ def wet_score_message(bot, update):
                      timeout=150)
 
 
+def word_watcher(bot, update):
+    regex = re.compile('(lula|informer)')
+    msg = update.message.text
+    for m in regex.findall(msg):
+        method = globals()[m]
+        method(bot, update)
+
+
+
 def ping(bot, update):
     gif = get_random_giphy(keyword='pong')
     bot.send_document(chat_id=update.message.chat_id,
@@ -107,10 +116,12 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('dry', dry_score_message))
     updater.dispatcher.add_handler(CommandHandler('wet', wet_score_message))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
-    informer_regex = re.compile('.*informer.*', re.IGNORECASE)
-    lula_regex = re.compile('.*lula.*', re.IGNORECASE)
-    updater.dispatcher.add_handler(RegexHandler(informer_regex, informer))
-    updater.dispatcher.add_handler(RegexHandler(lula_regex, lula))
+    word_watcher_regex = re.compile('.*(lula|informer).*')
+    # informer_regex = re.compile('.*informer.*', re.IGNORECASE)
+    # lula_regex = re.compile('.*lula.*', re.IGNORECASE)
+    # updater.dispatcher.add_handler(RegexHandler(informer_regex, informer))
+    # updater.dispatcher.add_handler(RegexHandler(lula_regex, lula))
+    updater.dispatcher.add_handler(RegexHandler(word_watcher_regex, word_watcher))
     updater.dispatcher.add_error_handler(error)
     # updater.dispatcher.add_handler(MessageHandler(
     #     Filters.text & (Filters.entity(MessageEntity.URL) |

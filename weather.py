@@ -218,9 +218,10 @@ def send_weather(bot, update, location=None):
     Highest Chance of Rain: {chance_of_rain}% at {time_of_rain}
 
     *Summary of conditions for the rest of the week:*
-    {results['daily']['summary']}'
-    {minutely}''
+    {results['daily']['summary']}
+    {minutely}'''
 
     bot.send_message(chat_id=update.message.chat_id,
                      text=f'*Monolognator Weather Report powered by darksky.net*:\n\n{message}',
                      parse_mode=telegram.ParseMode.MARKDOWN)
+    

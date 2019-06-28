@@ -169,21 +169,13 @@ def get_dry_scores(users):
 
 def beer(search):
     u_info = get_untappd(search)
-    r_info = get_ratebeer(search)
+    # r_info = get_ratebeer(search)
 
     rating = {'u_name': u_info['name'],
               'u_abv': u_info['abv'],
               'u_style': u_info['style'],
               'u_brewery': u_info['brewery'],
               'u_rating': u_info['rating'],
-              'u_count': u_info['count'],
-              'r_name': r_info['name'],
-              'r_abv': r_info['abv'],
-              'r_style': r_info['style'],
-              'r_brewery': r_info['brewery'],
-              'r_rating': r_info['rating'],
-              'r_count': r_info['count'],
-              'r_style_score': r_info['style_score'],
-              'image': r_info['image']}
+              'u_count': u_info['count']}
 
     return rating

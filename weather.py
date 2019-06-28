@@ -197,6 +197,12 @@ def send_weather(bot, update, location=None):
     #         day_summary = {'chance': highest_chance_of_rain * 100,
     #                        'time': i['time'], 'summary': i['summary']}
     chance_of_rain, time_of_rain = chance_of_rain_today(results)
+    next_hour = results.get('minutely')
+    if next_hour:
+        minutely = next_hour.get('summary')
+    else:
+        minutely = '-'
+
 
     message = f'''Good Morning {update.message.chat.title}, here is your daily forecast for {location}:
 
@@ -212,7 +218,8 @@ def send_weather(bot, update, location=None):
     Highest Chance of Rain: {chance_of_rain}% at {time_of_rain}
 
     *Summary of conditions for the rest of the week:*
-    {results['daily']['summary']}'''
+    {results['daily']['summary']}'
+    {minutely}''
 
     bot.send_message(chat_id=update.message.chat_id,
                      text=f'*Monolognator Weather Report powered by darksky.net*:\n\n{message}',

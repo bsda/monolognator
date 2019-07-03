@@ -143,19 +143,21 @@ def chuva2(bot, update, chat_id=None):
 
 
 def scheduled_weather(bot, job):
-    results = get_weather()
-    max_temp = results['daily']['data'][0]['temperatureMax']
-    chove, time_of_rain, chance_of_rain = vai_chover('London')
-    logger.info(f'Chove? {chove}')
-    if chove == 'Vai chover':
-        gif = get_random_giphy(keyword='sad')
-    else:
-        gif = get_random_giphy(keyword='happy')
-    bot.send_document(chat_id=-1001105653255,
-                      document=gif, caption=f'Em Westminster, 6 da manha! Bom dia!\n'
-                                            f'*{chove}* hoje em Londres *({chance_of_rain}% at {time_of_rain})*.'
-                                            f'\nMax Temp: *{max_temp}*C', timeout=5000,
-                      parse_mode=telegram.ParseMode.MARKDOWN)
+    locations = ['london', 'Maisons-Laffitte', 'Barcelona']
+    for l in locations:
+        results = get_weather(l)
+        max_temp = results['daily']['data'][0]['temperatureMax']
+        chove, time_of_rain, chance_of_rain = vai_chover(l)
+        logger.info(f'Chove? {chove}')
+        if chove == 'Vai chover':
+            gif = get_random_giphy(keyword='sad')
+        else:
+            gif = get_random_giphy(keyword='happy')
+        bot.send_document(chat_id=-1001105653255,
+                          document=gif, caption=f'Bom dia!\n'
+                                                f'*{chove}* hoje em {l} *({chance_of_rain}% at {time_of_rain})*.'
+                                                f'\nMax Temp: *{max_temp}*C', timeout=5000,
+                          parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def send_weather(bot, update, location=None):
@@ -224,4 +226,3 @@ def send_weather(bot, update, location=None):
     bot.send_message(chat_id=update.message.chat_id,
                      text=f'*Monolognator Weather Report powered by darksky.net*:\n\n{message}',
                      parse_mode=telegram.ParseMode.MARKDOWN)
-    

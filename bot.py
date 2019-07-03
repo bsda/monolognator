@@ -121,7 +121,7 @@ def main():
     #                     Filters.entity(MessageEntity.TEXT_LINK)), links.counter))
     updater.dispatcher.add_handler(MessageHandler(Filters.text & (~ Filters.reply), handle_counter))
     j = updater.job_queue
-    daily_job = j.run_daily(scheduled_weather, time=datetime.time(5))
+    daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
     if method == 'polling':
         updater.start_polling(clean=True)
     else:

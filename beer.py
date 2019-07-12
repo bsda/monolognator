@@ -9,6 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 def get_untappd(search):
+    beers = list()
+    keys = ['bid', 'beer_name', 'beer_label', 'beer_abv', 'rating_score',
+            'beer_style', 'beer_description', 'rating_count']
     logger.info(f'Searching untappd for {search}')
     client_id = os.getenv('untappd_client_id') 
     client_secret = os.getenv('untappd_client_secret')
@@ -32,6 +35,57 @@ def get_untappd(search):
         return untappd_beer
     except IndexError:
         return {}
+
+
+def get_untappd_beer(bid):
+    keys = ['bid', 'beer_name', 'beer_label', 'beer_abv', 'rating_score',
+            'beer_style', 'beer_description', 'rating_count']
+    logger.info(f'Getting beer info for beer_id {bid}')
+    client_id = os.getenv('untappd_client_id')
+    client_secret = os.getenv('untappd_client_secret')
+    client = untappd.Untappd(client_id=client_id,
+                             client_secret=client_secret,
+                             redirect_url=None)
+    try:
+        result = client.beer.info(bid)
+        untappd_beer = {'name': result['response']['beer']['beer_name'],
+                        'label': result['response']['beer']['beer_label_hd'],
+                        'abv': round(result['response']['beer']['beer_abv'], 2),
+                        'rating': round(result['response']['beer']['rating_score'], 2),
+                        'style': result['response']['beer']['beer_style'],
+                        'description': result['response']['beer']['beer_description'],
+                        'count': result['response']['beer']['rating_count'],
+                        'brewery': result['response']['beer']['brewery']['brewery_name'],
+                        'country': result['response']['beer']['brewery']['country_name'],
+                        'photos': list()}
+        media = result['response']['beer']['media']['items']
+        for m in media:
+            untappd_beer['photos'].append(m['photo']['photo_img_md'])
+        return untappd_beer
+    except IndexError:
+        return {}
+
+
+
+def search_untappd(search):
+    beers = list()
+    keys = ['bid', 'beer_name', 'beer_label', 'beer_abv', 'rating_score',
+            'beer_style', 'beer_description', 'rating_count']
+    logger.info(f'Searching untappd for {search}')
+    client_id = os.getenv('untappd_client_id')
+    client_secret = os.getenv('untappd_client_secret')
+    client = untappd.Untappd(client_id=client_id,
+                             client_secret=client_secret,
+                             redirect_url=None)
+
+    re = client.search.beer(q=search, limit=6)['response']['beers']['items']
+    for beer in re:
+        beers.append({'bid': beer['beer']['bid'],
+                      'name': beer['beer']['beer_name'],
+                      'checkin_count': beer['checkin_count'],
+                      'brewery': beer['brewery']['brewery_name'],
+                      'country': beer['brewery']['country_name']})
+    return beers
 
 
 def get_ratebeer(search):

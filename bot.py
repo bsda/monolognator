@@ -1,4 +1,7 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler, RegexHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler
+from telegram.ext import Filters, InlineQueryHandler, RegexHandler
+from telegram.ext import CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import MessageEntity
 import telegram
 import logging
@@ -8,6 +11,9 @@ import datetime
 import beer
 import re
 import json
+import random
+import flag
+import pycountry
 from operator import itemgetter
 from gif import get_random_giphy, search_tenor, inlinequery, informer, lula
 from monologue import query_limit, set_limit, handle_counter
@@ -26,6 +32,65 @@ gif_path = './gifs/'
 def start(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text="I'm The MonologNator. I'll be back")
+
+
+def build_menu(buttons,
+               n_cols,
+               header_buttons=None,
+               footer_buttons=None):
+    menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+    if header_buttons:
+        menu.insert(0, [header_buttons])
+    if footer_buttons:
+        menu.append([footer_buttons])
+    return menu
+
+
+def emojify(country):
+    if country == 'England':
+        return '🏴󠁧󠁢󠁥󠁮󠁧󠁿󠁧󠁢󠁳󠁣󠁴󠁿'
+    if country == 'Scotland':
+        return '🏴󠁧󠁢󠁳󠁣󠁴󠁿'
+    if country == 'Russia':
+        country = 'Russian Federation'
+    alpha_2 = pycountry.countries.get(name=country).alpha_2
+    emoji = flag.flagize(f':{alpha_2}:')
+    return emoji
+
+
+def beer_search_menu(bot, update):
+    search = update.message.text.split('/beer2 ')[1]
+    beers = beer.search_untappd(search)
+    buttons = list()
+    for b in beers:
+        emoji = emojify(b['country'])
+        buttons.append(InlineKeyboardButton(f'{emoji}  {b["name"]} by {b["brewery"]} - ({b["checkin_count"]}) checkins',
+                                            callback_data=b['bid']))
+    reply_markup = InlineKeyboardMarkup(build_menu(buttons, n_cols=1))
+    update.message.reply_text('Which one do you mean?', reply_markup=reply_markup,
+                              remove_keyboard=True)
+
+
+def beer_info(bot, update):
+    query = update.callback_query
+    mid = query.message.message_id
+    cid = query.message.chat_id
+    bot.delete_message(chat_id=cid, message_id=mid)
+    bid = query.data
+    info = beer.get_untappd_beer(bid)
+    message = f'*{info["name"]}* by {info["brewery"]}\n'
+    message += f'*{info["style"]}*, *abv:* {info["abv"]}%\n'
+    message += f'*Rating:* {info["rating"]}'
+    if info['label']:
+        photo = info['label']
+    else:
+        photo = random.choice(info['photos'])
+    bot.send_photo(chat_id=query.message.chat_id,
+                   caption=message,
+                   parse_mode=telegram.ParseMode.MARKDOWN,
+                   photo=photo)
+
+
 
 
 def beer_rating(bot, update):
@@ -104,8 +169,9 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('weather', send_weather))
     updater.dispatcher.add_handler(CommandHandler('chuva', chuva))
     updater.dispatcher.add_handler(CommandHandler('chuva2', chuva2))
-    # updater.dispatcher.add_handler(CommandHandler('chuva3', scheduled_chuva))
-    updater.dispatcher.add_handler(CommandHandler('beer', beer_rating))
+    # updater.dispatcher.add_handler(CommandHandler('chuva3',w scheduled_chuva))
+    updater.dispatcher.add_handler(CommandHandler('beer', beer_search_menu))
+    updater.dispatcher.add_handler(CommandHandler('beer2', beer_search_menu))
     updater.dispatcher.add_handler(CommandHandler('dry', dry_score_message))
     updater.dispatcher.add_handler(CommandHandler('wet', wet_score_message))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
@@ -115,6 +181,7 @@ def main():
     # updater.dispatcher.add_handler(RegexHandler(informer_regex, informer))
     # updater.dispatcher.add_handler(RegexHandler(lula_regex, lula))
     updater.dispatcher.add_handler(RegexHandler(word_watcher_regex, word_watcher))
+    updater.dispatcher.add_handler(CallbackQueryHandler(beer_info))
     updater.dispatcher.add_error_handler(error)
     # updater.dispatcher.add_handler(MessageHandler(
     #     Filters.text & (Filters.entity(MessageEntity.URL) |

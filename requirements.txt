@@ -4,3 +4,5 @@ requests
 geopy
 untappd
 pytz
+pycountry
+emoji-country-flag

@@ -86,9 +86,9 @@ def beer_info(bot, update):
     else:
         photo = random.choice(info['photos'])
     bot.send_photo(chat_id=query.message.chat_id,
-                   caption=message,
-                   parse_mode=telegram.ParseMode.MARKDOWN,
-                   photo=photo)
+                    caption=message,
+                    parse_mode=telegram.ParseMode.MARKDOWN,
+                    photo=photo)
 
 
 

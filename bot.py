@@ -53,13 +53,16 @@ def emojify(country):
         return '🏴󠁧󠁢󠁳󠁣󠁴󠁿'
     if country == 'Russia':
         country = 'Russian Federation'
-    alpha_2 = pycountry.countries.get(name=country).alpha_2
-    emoji = flag.flagize(f':{alpha_2}:')
+    try:
+        alpha_2 = pycountry.countries.get(name=country).alpha_2
+        emoji = flag.flagize(f':{alpha_2}:')
+    except Exception:
+        return '🏴‍☠️'
     return emoji
 
 
 def beer_search_menu(bot, update):
-    search = update.message.text.split('/beer2 ')[1]
+    search = update.message.text.split('/beer ')[1]
     beers = beer.search_untappd(search)
     buttons = list()
     for b in beers:

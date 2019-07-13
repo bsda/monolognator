@@ -15,6 +15,7 @@ counter = {}
 msg_limit = {}
 my_chat_id = 113426151
 
+
 def query_limit(bot, update):
     user = update.message.from_user.id
     chat = update.message.chat_id
@@ -71,8 +72,9 @@ def add_count(chat, user, update):
 
 def initialize_count(chat, user, update):
     global counter
-    if chat not in counter:
-        counter[chat] = {}
+    logger.info(f'Initializing counter on {chat}, {user}')
+    # if chat not in counter:
+    counter[chat] = {}
     counter[chat][user] = {}
     user_counter = counter[chat][user]
     user_counter['count'] = 1
@@ -83,10 +85,11 @@ def initialize_count(chat, user, update):
 
 def reset_count(chat, user, update):
     global counter
-    previous_user = counter[chat]['latest_by']
-    logger.info(f"Resetting the counter for {previous_user} on {update.message.chat.title}")
-    counter[chat].pop(previous_user)
-    initialize_count(chat, user, update)
+    # previous_user = counter[chat]['latest_by']
+    logger.info(f"Resetting the counter on {update.message.chat.title}")
+    # counter[chat].pop(previous_user)
+    # initialize_count(chat, user, update)
+    counter[chat] = {}
 
 
 def get_count(chat, user):
@@ -200,6 +203,7 @@ def handle_counter(bot, update):
             # Check if user hit  chat limit. If it did, monolognate it
             if hit_limit(chat, user, update):
                 monolognate(chat, user, bot, update)
+                reset_count(chat, user, update)
         else:
             reset_count(chat, user, update)
 

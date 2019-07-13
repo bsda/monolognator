@@ -37,7 +37,7 @@ def get_untappd(search):
         return {}
 
 
-def get_untappd_beer(bid):
+def get_untappd_beer(bid, homebrew=False):
     keys = ['bid', 'beer_name', 'beer_label', 'beer_abv', 'rating_score',
             'beer_style', 'beer_description', 'rating_count']
     logger.info(f'Getting beer info for beer_id {bid}')
@@ -67,7 +67,11 @@ def get_untappd_beer(bid):
 
 
 
-def search_untappd(search):
+def search_untappd(search, homebrew=False):
+    if homebrew:
+        beertype = 'homebrew'
+    else:
+        beertype = 'beers'
     beers = list()
     keys = ['bid', 'beer_name', 'beer_label', 'beer_abv', 'rating_score',
             'beer_style', 'beer_description', 'rating_count']
@@ -78,7 +82,7 @@ def search_untappd(search):
                              client_secret=client_secret,
                              redirect_url=None)
 
-    re = client.search.beer(q=search, limit=6)['response']['beers']['items']
+    re = client.search.beer(q=search, limit=6)['response'][beertype]['items']
     for beer in re:
         beers.append({'bid': beer['beer']['bid'],
                       'name': beer['beer']['beer_name'],

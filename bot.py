@@ -62,8 +62,12 @@ def emojify(country):
 
 
 def beer_search_menu(bot, update):
-    search = update.message.text.split('/beer ')[1]
-    beers = beer.search_untappd(search)
+    if update.message.text.startswith('/beer'):
+        search = update.message.text.split('/beer ')[1]
+        beers = beer.search_untappd(search)
+    elif update.message.text.startswith('/homebrew'):
+        search = update.message.text.split('/homebrew ')[1]
+        beers = beer.search_untappd(search, homebrew=True)
     buttons = list()
     for b in beers:
         emoji = emojify(b['country'])
@@ -81,17 +85,21 @@ def beer_info(bot, update):
     bot.delete_message(chat_id=cid, message_id=mid)
     bid = query.data
     info = beer.get_untappd_beer(bid)
-    message = f'*{info["name"]}* by {info["brewery"]}\n'
+    emoji = emojify(info['country'])
+    message = f'*{info["name"]}* by {info["brewery"]} {emoji}\n'
     message += f'*{info["style"]}*, *abv:* {info["abv"]}%\n'
     message += f'*Rating:* {info["rating"]}'
     if info['label']:
         photo = info['label']
     else:
-        photo = random.choice(info['photos'])
+        try:
+            photo = random.choice(info['photos'])
+        except IndexError:
+            photo = 'https://untappd.akamaized.net/site/assets/images/temp/badge-beer-default.png'
     bot.send_photo(chat_id=query.message.chat_id,
-                    caption=message,
-                    parse_mode=telegram.ParseMode.MARKDOWN,
-                    photo=photo)
+                   caption=message,
+                   parse_mode=telegram.ParseMode.MARKDOWN,
+                   photo=photo)
 
 
 
@@ -174,6 +182,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('chuva2', chuva2))
     # updater.dispatcher.add_handler(CommandHandler('chuva3',w scheduled_chuva))
     updater.dispatcher.add_handler(CommandHandler('beer', beer_search_menu))
+    updater.dispatcher.add_handler(CommandHandler('homebrew', beer_search_menu))
     updater.dispatcher.add_handler(CommandHandler('beer2', beer_search_menu))
     updater.dispatcher.add_handler(CommandHandler('dry', dry_score_message))
     updater.dispatcher.add_handler(CommandHandler('wet', wet_score_message))

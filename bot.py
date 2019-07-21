@@ -86,9 +86,9 @@ def beer_info(bot, update):
     bid = query.data
     info = beer.get_untappd_beer(bid)
     emoji = emojify(info['country'])
-    message = f'*{info["name"]}* by {info["brewery"]} {emoji}\n'
-    message += f'*{info["style"]}*, *abv:* {info["abv"]}%\n'
-    message += f'*Rating:* {info["rating"]}'
+    message = f'<a href="http://untappd.com/beer/{info["bid"]}"> {info["name"]}</a> by {info["brewery"]} {emoji}\n'
+    message += f'<b>{info["style"]}, abv:</b> {info["abv"]}%\n'
+    message += f'<b>Rating:</b> {info["rating"]}\n'
     if info['label']:
         photo = info['label']
     else:
@@ -98,7 +98,7 @@ def beer_info(bot, update):
             photo = 'https://untappd.akamaized.net/site/assets/images/temp/badge-beer-default.png'
     bot.send_photo(chat_id=query.message.chat_id,
                    caption=message,
-                   parse_mode=telegram.ParseMode.MARKDOWN,
+                   parse_mode=telegram.ParseMode.HTML,
                    photo=photo)
 
 

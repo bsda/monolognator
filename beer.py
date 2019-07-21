@@ -48,7 +48,8 @@ def get_untappd_beer(bid, homebrew=False):
                              redirect_url=None)
     try:
         result = client.beer.info(bid)
-        untappd_beer = {'name': result['response']['beer']['beer_name'],
+        untappd_beer = {'bid': bid,
+                        'name': result['response']['beer']['beer_name'],
                         'label': result['response']['beer']['beer_label_hd'],
                         'abv': round(result['response']['beer']['beer_abv'], 2),
                         'rating': round(result['response']['beer']['rating_score'], 2),

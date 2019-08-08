@@ -102,26 +102,6 @@ def beer_info(bot, update):
                    photo=photo)
 
 
-
-
-def beer_rating(bot, update):
-    search = update.message.text.split('/beer ')[1]
-    rating = beer.beer(search)
-    message = '*___Untappd:___*\n'
-    message += f'*{rating["u_name"]}* by {rating["u_brewery"]}\n'
-    message += f'*{rating["u_style"]}*, abv: {rating["u_abv"]}%\n'
-    message += f'Rating: *{rating["u_rating"]}*, Count: {rating["u_count"]}\n\n'
-    try:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=message, parse_mode=telegram.ParseMode.MARKDOWN,
-                         timeout=150)
-    except TimeoutError:
-        time.sleep(2)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=message, parse_mode=telegram.ParseMode.MARKDOWN,
-                         timeout=150)
-
-
 def dry_score_message(bot, update):
     users = json.loads(os.environ['untappd_users'])
     score = beer.get_dry_scores(users)
@@ -180,7 +160,6 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('weather', send_weather))
     updater.dispatcher.add_handler(CommandHandler('chuva', chuva))
     updater.dispatcher.add_handler(CommandHandler('chuva2', chuva2))
-    # updater.dispatcher.add_handler(CommandHandler('chuva3',w scheduled_chuva))
     updater.dispatcher.add_handler(CommandHandler('beer', beer_search_menu))
     updater.dispatcher.add_handler(CommandHandler('homebrew', beer_search_menu))
     updater.dispatcher.add_handler(CommandHandler('beer2', beer_search_menu))
@@ -188,16 +167,9 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('wet', wet_score_message))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     word_watcher_regex = re.compile('.*(lula|informer).*', re.IGNORECASE)
-    # informer_regex = re.compile('.*informer.*', re.IGNORECASE)
-    # lula_regex = re.compile('.*lula.*', re.IGNORECASE)
-    # updater.dispatcher.add_handler(RegexHandler(informer_regex, informer))
-    # updater.dispatcher.add_handler(RegexHandler(lula_regex, lula))
     updater.dispatcher.add_handler(RegexHandler(word_watcher_regex, word_watcher))
     updater.dispatcher.add_handler(CallbackQueryHandler(beer_info))
     updater.dispatcher.add_error_handler(error)
-    # updater.dispatcher.add_handler(MessageHandler(
-    #     Filters.text & (Filters.entity(MessageEntity.URL) |
-    #                     Filters.entity(MessageEntity.TEXT_LINK)), links.counter))
     updater.dispatcher.add_handler(MessageHandler(Filters.text & (~ Filters.reply), handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))

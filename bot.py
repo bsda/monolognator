@@ -130,7 +130,7 @@ def wet_score_message(bot, update):
 
 
 def word_watcher(bot, update):
-    regex = re.compile('(lula|informer)')
+    regex = re.compile('(lula|informer|slough)')
     msg = update.message.text.lower()
     for m in regex.findall(msg):
         method = globals()[m]

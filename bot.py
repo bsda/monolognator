@@ -138,7 +138,7 @@ def word_watcher(bot, update):
 
 
 def send_gif(bot, update):
-    gif = get_random_tenor('apocalypse')
+    gif = get_random_tenor('nuclear')
     bot.send_document(chat_id=update.message.chat_id,
                       document=gif, timeout=100)
 

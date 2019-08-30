@@ -15,7 +15,7 @@ import random
 import flag
 import pycountry
 from operator import itemgetter
-from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slough, get_random_tenor
+from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slough, get_random_tenor, nuclear, freakout
 from monologue import query_limit, set_limit, handle_counter
 from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather
 
@@ -130,17 +130,15 @@ def wet_score_message(bot, update):
 
 
 def word_watcher(bot, update):
-    regex = re.compile('(lula|informer|slough)')
+    regex = re.compile('(lula|informer|slough|vai ficar tudo bem|calma cara)')
     msg = update.message.text.lower()
     for m in regex.findall(msg):
+        if m == 'vai ficar tudo bem':
+            m = 'nuclear'
+        elif m == 'calma cara':
+            m = 'freakout'
         method = globals()[m]
         method(bot, update)
-
-
-def send_gif(bot, update):
-    gif = get_random_tenor('nuclear')
-    bot.send_document(chat_id=update.message.chat_id,
-                      document=gif, timeout=100)
 
 
 def ping(bot, update):
@@ -171,10 +169,11 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('dry', dry_score_message))
     updater.dispatcher.add_handler(CommandHandler('wet', wet_score_message))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
-    word_watcher_regex = re.compile('.*(lula|informer|slough).*', re.IGNORECASE)
+    word_watcher_regex = re.compile('.*(lula|informer|slough|vai ficar tudo bem|calma cara).*', re.IGNORECASE)
     updater.dispatcher.add_handler(RegexHandler(word_watcher_regex, word_watcher))
-    apocalex = re.compile('.*(vai ficar tudo bem).*', re.IGNORECASE)
-    updater.dispatcher.add_handler(RegexHandler(apocalex, send_gif))
+    # apocalex = re.compile('.*(vai ficar tudo bem).*', re.IGNORECASE)
+    # updater.dispatcher.add_handler(RegexHandler(apocalex, send_nuclear))
+
     updater.dispatcher.add_handler(CallbackQueryHandler(beer_info))
     updater.dispatcher.add_error_handler(error)
     updater.dispatcher.add_handler(MessageHandler(Filters.text & (~ Filters.reply), handle_counter))

@@ -78,7 +78,7 @@ def search_tenor(keyword, offset=0):
 def get_random_tenor(keyword):
     tenor_token = os.getenv('tenor_token')
     params = {'key': tenor_token, 'media_filter': 'minimal',
-              'q': keyword, 'limit': 50, 'pos': random.choice(range(300))}
+              'q': keyword, 'limit': 50, 'pos': random.choice(range(50))}
     # print(params)
     re = requests.get(f'https://api.tenor.com/v1/random', params=params)
     gif = random.choice(re.json()['results'])['media'][0]['mediumgif']['url']
@@ -126,3 +126,13 @@ def slough(bot, update):
     gif = re.json()['results'][0]['media'][0]['mediumgif']['url']
     logger.info(gif)
     bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=1000)
+
+
+def nuclear(bot, update):
+    gif = get_random_tenor('nuclear explosion')
+    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=100)
+
+
+def freakout(bot, update):
+    gif = get_random_tenor('freak out')
+    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=100)

@@ -19,7 +19,7 @@ from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slo
 from monologue import query_limit, set_limit, handle_counter
 from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather
 
-logging.basicConfig(level=logging.INFO,
+logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(funcName)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -176,7 +176,7 @@ def main():
 
     updater.dispatcher.add_handler(CallbackQueryHandler(beer_info))
     updater.dispatcher.add_error_handler(error)
-    updater.dispatcher.add_handler(MessageHandler(Filters.text & (~ Filters.reply), handle_counter))
+    updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
     if method == 'polling':

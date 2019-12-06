@@ -143,7 +143,7 @@ def chuva2(bot, update, chat_id=None):
 
 
 def scheduled_weather(bot, job):
-    locations = ['london', 'Maisons-Laffitte', 'Barcelona']
+    locations = ['london', 'Maisons-Laffitte', 'Barcelona', 'Geneva']
     for l in locations:
         results = get_weather(l)
         max_temp = results['daily']['data'][0]['temperatureMax']

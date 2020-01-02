@@ -1,4 +1,4 @@
-FROM python:3 as base
+FROM python:3.8 as base
 
 FROM base as builder
 
@@ -7,7 +7,7 @@ WORKDIR /install
 COPY requirements.txt /requirements.txt
 RUN pip install --prefix=/install -r /requirements.txt
 
-FROM python:3.7-alpine
+FROM python:3.8-alpine
 
 COPY --from=builder /install /usr/local
 WORKDIR /

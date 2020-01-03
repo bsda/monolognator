@@ -1,0 +1,10 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: monolognator 
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "kubernetes-ingress"
+spec:
+  backend:
+    serviceName: monolognator 
+    servicePort: 8443

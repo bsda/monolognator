@@ -1,0 +1,8 @@
+{ "config": {
+       	  "untappd-users": ["cervejista", "rubesam", "guicane", "georgeum", "Charu", "piripak"],
+	  "update-method": "webhook",
+	  "webhook-url": "https://monolognator.brunix.net:8443"
+}
+}
+
+

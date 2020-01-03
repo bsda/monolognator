@@ -2,18 +2,15 @@ from telegram.ext import Updater, CommandHandler, MessageHandler
 from telegram.ext import Filters, InlineQueryHandler, RegexHandler
 from telegram.ext import CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import MessageEntity
 import telegram
 import logging
-import os
-import time
 import datetime
 import beer
 import re
-import json
 import random
 import flag
 import pycountry
+import config
 from operator import itemgetter
 from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slough, get_random_tenor, nuclear, freakout
 from monologue import query_limit, set_limit, handle_counter
@@ -29,10 +26,7 @@ my_chat_id = 113426151
 gif_path = './gifs/'
 
 
-with open('/config/config.json') as config_file:
-    logger.info('Loading config file...')
-    cfg = json.load(config_file)['config']
-    logger.info(f'Loaded config:\n{cfg}')
+cfg = config.cfg()
 
 
 def start(bot, update):
@@ -160,7 +154,7 @@ def error(bot, update, error):
 
 def main():
     method = cfg.get('update-method') or 'polling'
-    token = os.getenv('telegram_token')
+    token = cfg.get('telegram_token')
     updater = Updater(token, request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('ping', ping))

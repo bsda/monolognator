@@ -5,7 +5,9 @@ import logging
 import os
 import requests
 import uuid
+import config
 logger = logging.getLogger(__name__)
+cfg = config.cfg()
 
 
 # INLINE QUERY (GIF SEARCH)
@@ -32,7 +34,7 @@ def inlinequery(bot, update):
 # GIPHY
 def search_giphy(keyword, offset=0):
     gifs = []
-    giphy_token = os.getenv('giphy_token')
+    giphy_token = cfg.get('giphy_token')
     params = {'api_key': giphy_token, 'rating': 'r',
               'q': keyword, 'limit': 50, 'offset': offset}
     re = requests.get(f'https://api.giphy.com/v1/gifs/search', params=params)
@@ -43,7 +45,7 @@ def search_giphy(keyword, offset=0):
 
 
 def get_random_giphy(keyword=None):
-    giphy_token=os.getenv('giphy_token')
+    giphy_token=cfg.get('giphy_token')
     # offset = 0
     # gifs = list()
     params = {'api_key': giphy_token, 'rating': 'r'}
@@ -64,7 +66,7 @@ def get_random_giphy(keyword=None):
 # TENOR
 def search_tenor(keyword, offset=0):
     gifs = []
-    tenor_token = os.getenv('tenor_token')
+    tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'media_filter': 'minimal',
               'q': keyword, 'limit': 40, 'pos': offset}
     re = requests.get(f'https://api.tenor.com/v1/search', params=params)
@@ -76,7 +78,7 @@ def search_tenor(keyword, offset=0):
 
 
 def get_random_tenor(keyword):
-    tenor_token = os.getenv('tenor_token')
+    tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'media_filter': 'minimal',
               'q': keyword, 'limit': 50, 'pos': random.choice(range(50))}
     # print(params)
@@ -96,7 +98,7 @@ def send_random_tenor(bot, update, keyword):
 def informer(bot, update):
     # https://media1.tenor.com/images/9c58132c8e37a5d7f5a999332667967b/tenor.gif?itemid=13141855
     # https: // api.tenor.com / v1 / gifs? < parameters >
-    tenor_token = os.getenv('tenor_token')
+    tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'ids': 13141855}
     # print(params)
     re = requests.get(f'https://api.tenor.com/v1/gifs', params=params)
@@ -108,7 +110,7 @@ def informer(bot, update):
 def lula(bot, update):
     # https://media1.tenor.com/images/9c58132c8e37a5d7f5a999332667967b/tenor.gif?itemid=13141855
     # https: // api.tenor.com / v1 / gifs? < parameters >
-    tenor_token = os.getenv('tenor_token')
+    tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'ids': 5544629}
     # print(params)
     re = requests.get(f'https://api.tenor.com/v1/gifs', params=params)
@@ -119,7 +121,7 @@ def lula(bot, update):
 def slough(bot, update):
     # https://media1.tenor.com/images/9c58132c8e37a5d7f5a999332667967b/tenor.gif?itemid=13141855
     # https: // api.tenor.com / v1 / gifs? < parameters >
-    tenor_token = os.getenv('tenor_token')
+    tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'ids': 8193002}
     # print(params)
     re = requests.get(f'https://api.tenor.com/v1/gifs', params=params)

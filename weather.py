@@ -7,9 +7,9 @@ import time
 import datetime
 from geopy import Nominatim
 from gif import get_random_giphy, search_tenor, inlinequery
-
+import config
 logger = logging.getLogger(__name__)
-
+cfg = config.cfg()
 
 
 # WEATHER
@@ -19,7 +19,7 @@ def get_weather(location='London'):
     loc = geo.geocode(location)
     latlon = f'{loc.latitude}, {loc.longitude}'
     # location = '51.4975,-0.1357'
-    key = os.getenv('darksky_token')
+    key = cfg.get('darksky_token')
     params = {'units': 'si'}
     re = requests.get(f'https://api.darksky.net/forecast/{key}/{latlon}', params=params)
     results = re.json()

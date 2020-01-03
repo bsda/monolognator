@@ -29,7 +29,7 @@ my_chat_id = 113426151
 gif_path = './gifs/'
 
 
-with open('config.json') as config_file:
+with open('/config/config.json') as config_file:
     logger.info('Loading config file...')
     cfg = json.load(config_file)['config']
     logger.info(f'Loaded config:\n{cfg}')

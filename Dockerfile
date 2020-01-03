@@ -16,6 +16,7 @@ ADD beer.py /
 ADD gif.py /
 ADD monologue.py /
 ADD weather.py /
+ADD config.py /
 ADD entry.sh /
 RUN apk add openssl bash
 #RUN pip install pip --upgrade

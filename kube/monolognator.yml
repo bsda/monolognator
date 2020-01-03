@@ -7,14 +7,6 @@ metadata:
   namespace: default
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: monolognator
-  strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
-    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -23,70 +15,72 @@ spec:
       labels:
         app: monolognator
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - monolognator
-                topologyKey: kubernetes.io/hostname
-              weight: 1
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf # place ConfigMap `nginx-conf` on /etc/nginx
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+        - name: config
+          configMap:
+            name: config
       containers:
-        - env:
-            - name: telegram_token
-              valueFrom:
-                secretKeyRef:
-                  key: token
-                  name: telegram-token
-            - name: giphy_token
-              valueFrom:
-                secretKeyRef:
-                  key: token
-                  name: giphy-token
-            - name: darksky_token
-              valueFrom:
-                secretKeyRef:
-                  key: token
-                  name: darksky-token
-            - name: tenor_token
-              valueFrom:
-                secretKeyRef:
-                  key: token
-                  name: tenor-token
-            - name: untappd_client_id
-              valueFrom:
-                secretKeyRef:
-                  key: client-id
-                  name: untappd
-            - name: untappd_client_secret
-              valueFrom:
-                secretKeyRef:
-                  key: client-secret
-                  name: untappd
-            - name: CN
-              value: monolognator.brunix.net
-          image: registry.hub.docker.com/jambock/monolognator
-          imagePullPolicy: Always 
-          name: monolognator
-          ports:
-            - containerPort: 8443
-              name: https
-              protocol: TCP
-          volumeMounts:
-            - mountPath: /config
-              name: config
+      - image: registry.hub.docker.com/jambock/monolognator
+        imagePullPolicy: Always
+        name: monolognator
+        ports:
+          - containerPort: 8080
+            protocol: TCP
+        volumeMounts:
+          - mountPath: /config
+            name: config
+        env:
+          - name: telegram_token
+            valueFrom:
+              secretKeyRef:
+                key: token
+                name: telegram-token
+          - name: giphy_token
+            valueFrom:
+              secretKeyRef:
+                key: token
+                name: giphy-token
+          - name: darksky_token
+            valueFrom:
+              secretKeyRef:
+                key: token
+                name: darksky-token
+          - name: tenor_token
+            valueFrom:
+              secretKeyRef:
+                key: token
+                name: tenor-token
+          - name: untappd_client_id
+            valueFrom:
+              secretKeyRef:
+                key: client-id
+                name: untappd
+          - name: untappd_client_secret
+            valueFrom:
+              secretKeyRef:
+                key: client-secret
+                name: untappd
+          - name: CN
+            value: monolognator.brunix.net
+      - image: nginx
+        name: nginx
+        ports:
+          - containerPort: 80
+            protocol: TCP
+        volumeMounts:
+          - mountPath: /etc/nginx
+            readOnly: true
+            name: nginx-conf
       restartPolicy: Always
       serviceAccountName: monolognator
       terminationGracePeriodSeconds: 30
-      volumes:
-        - configMap:
-            defaultMode: 420
-            name: config
-          name: config
+
 ---
 apiVersion: v1
 imagePullSecrets:
@@ -107,11 +101,11 @@ metadata:
   namespace: default
 spec:
   ports:
-    - port: 443
+    - port: 80
       protocol: TCP
-      targetPort: 8443 
+      targetPort: 80
   selector:
     app: monolognator
   sessionAffinity: None
-  type: LoadBalancer 
+  type: NodePort
 

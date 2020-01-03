@@ -11,6 +11,7 @@ import random
 import flag
 import pycountry
 import config
+import os
 from operator import itemgetter
 from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slough, get_random_tenor, nuclear, freakout
 from monologue import query_limit, set_limit, handle_counter
@@ -154,7 +155,7 @@ def error(bot, update, error):
 
 def main():
     method = cfg.get('update-method') or 'polling'
-    token = cfg.get('telegram_token')
+    token = os.getenv('telegram_token')
     updater = Updater(token, request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('ping', ping))

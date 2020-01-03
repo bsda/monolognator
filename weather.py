@@ -19,7 +19,7 @@ def get_weather(location='London'):
     loc = geo.geocode(location)
     latlon = f'{loc.latitude}, {loc.longitude}'
     # location = '51.4975,-0.1357'
-    key = cfg.get('darksky_token')
+    key = os.getenv('darksky_token')
     params = {'units': 'si'}
     re = requests.get(f'https://api.darksky.net/forecast/{key}/{latlon}', params=params)
     results = re.json()

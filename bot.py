@@ -185,12 +185,10 @@ def main():
     else:
         webhook_url = cfg.get('webhook-url')
         updater.start_webhook(listen='0.0.0.0',
-                              port=8443,
+                              port='8080',
                               url_path=token,
-                              key='private.key',
-                              cert='cert.pem',
-                              webhook_url=f'{webhook_url}/{token}',
                               clean=True)
+        updater.bot.set_webhook(webhook_url)
     logger.info('Starting Monolognator...')
     updater.idle()
 

@@ -17,7 +17,7 @@ ADD gif.py /
 ADD monologue.py /
 ADD weather.py /
 ADD entry.sh /
-RUN apk add openssl
+RUN apk add openssl bash
 #RUN pip install pip --upgrade
 RUN chmod +x /entry.sh
 CMD /entry.sh

@@ -30,9 +30,9 @@ gif_path = './gifs/'
 
 
 with open('config.json') as config_file:
-    print('Loading config file...')
+    logger.info('Loading config file...')
     cfg = json.load(config_file)['config']
-    print(f'Loaded config:\n{cfg}')
+    logger.info(f'Loaded config:\n{cfg}')
 
 
 def start(bot, update):

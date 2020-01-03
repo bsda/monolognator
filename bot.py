@@ -29,6 +29,10 @@ my_chat_id = 113426151
 gif_path = './gifs/'
 
 
+with open('config.json') as config_file:
+    cfg = json.load(config_file)['config']
+
+
 def start(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text="I'm The MonologNator. I'll be back")
@@ -103,7 +107,7 @@ def beer_info(bot, update):
 
 
 def dry_score_message(bot, update):
-    users = json.loads(os.environ['untappd_users'])
+    users = cfg.get('untappd-users')
     score = beer.get_dry_scores(users)
     sorted_score = sorted(score, key=itemgetter('days'), reverse=True)
     message = '*Current Dry Scores*:\n\n'
@@ -117,7 +121,7 @@ def dry_score_message(bot, update):
 
 
 def wet_score_message(bot, update):
-    users = json.loads(os.environ['untappd_users'])
+    users = cfg.get('untappd-users')
     wet_score = beer.get_wet_scores(users)
     sorted_score = sorted(wet_score, key=itemgetter('score'), reverse=True)
     message = '*Last Week Wet Scores*:\n\n'
@@ -153,7 +157,7 @@ def error(bot, update, error):
 
 
 def main():
-    method = os.getenv('update_method') or 'polling'
+    method = cfg.get('update-method') or 'polling'
     token = os.getenv('telegram_token')
     updater = Updater(token, request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
     updater.dispatcher.add_handler(CommandHandler('start', start))
@@ -182,7 +186,7 @@ def main():
     if method == 'polling':
         updater.start_polling(clean=True)
     else:
-        webhook_url = os.getenv('webhook_url')
+        webhook_url = cfg.get('webhook-url')
         updater.start_webhook(listen='0.0.0.0',
                               port=8443,
                               url_path=token,

@@ -77,6 +77,10 @@ spec:
           - mountPath: /etc/nginx
             readOnly: true
             name: nginx-conf
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
       restartPolicy: Always
       serviceAccountName: monolognator
       terminationGracePeriodSeconds: 30

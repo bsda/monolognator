@@ -186,11 +186,12 @@ def main():
         updater.start_polling(clean=True)
     else:
         webhook_url = cfg.get('webhook-url')
+        webhook_url = webhook_url + '/' + token
         updater.start_webhook(listen='0.0.0.0',
                               port='8080',
                               url_path=token)
-        logger.info(f'Setting webhook url to: {webhook_url}/{token}')
-        updater.bot.set_webhook(f'{webhook_url}/{token}')
+        logger.info(f'Setting webhook url to: {webhook_url}')
+        updater.bot.set_webhook(url=webhook_url)
     logger.info('Starting Monolognator...')
     updater.idle()
 

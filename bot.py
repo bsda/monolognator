@@ -188,9 +188,9 @@ def main():
         webhook_url = cfg.get('webhook-url')
         updater.start_webhook(listen='0.0.0.0',
                               port='8080',
-                              url_path=token,
-                              clean=True)
-        updater.bot.set_webhook(webhook_url)
+                              url_path=token)
+        logger.info(f'Setting webhook url to: {webhook_url}/{token}')
+        updater.bot.set_webhook(f'{webhook_url}/{token}')
     logger.info('Starting Monolognator...')
     updater.idle()
 

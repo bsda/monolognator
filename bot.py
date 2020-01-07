@@ -133,13 +133,15 @@ def wet_score_message(bot, update):
 
 
 def word_watcher(bot, update):
-    regex = re.compile('(lula|informer|slough|vai ficar tudo bem|calma cara)')
+    regex = re.compile('(lula|informer|slough|vai ficar tudo bem|calma cara|999London)')
     msg = update.message.text.lower()
     for m in regex.findall(msg):
         if m == 'vai ficar tudo bem':
             m = 'nuclear'
         elif m == 'calma cara':
             m = 'freakout'
+        elif m == '999London':
+            m = 'london999'
         method = globals()[m]
         method(bot, update)
 

@@ -94,40 +94,32 @@ def send_random_tenor(bot, update, keyword):
                       document=gif, timeout=100)
 
 
-
-def informer(bot, update):
-    # https://media1.tenor.com/images/9c58132c8e37a5d7f5a999332667967b/tenor.gif?itemid=13141855
-    # https: // api.tenor.com / v1 / gifs? < parameters >
+def get_tenor_gif(gifid):
     tenor_token = os.getenv('tenor_token')
-    params = {'key': tenor_token, 'ids': 13141855}
-    # print(params)
+    params = {'key': tenor_token, 'ids': gifid}
     re = requests.get(f'https://api.tenor.com/v1/gifs', params=params)
     gif = re.json()['results'][0]['media'][0]['mediumgif']['url']
-    logger.info(gif)
-    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=1000)
+    return gif
+
+
+def informer(bot, update):
+    gif = get_tenor_gif(13141855)
+    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=100)
 
 
 def lula(bot, update):
-    # https://media1.tenor.com/images/9c58132c8e37a5d7f5a999332667967b/tenor.gif?itemid=13141855
-    # https: // api.tenor.com / v1 / gifs? < parameters >
-    tenor_token = os.getenv('tenor_token')
-    params = {'key': tenor_token, 'ids': 5544629}
-    # print(params)
-    re = requests.get(f'https://api.tenor.com/v1/gifs', params=params)
-    gif = re.json()['results'][0]['media'][0]['mediumgif']['url']
-    logger.info(gif)
-    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=1000)
+    gif = get_tenor_gif(5544629)
+    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=100)
+
 
 def slough(bot, update):
-    # https://media1.tenor.com/images/9c58132c8e37a5d7f5a999332667967b/tenor.gif?itemid=13141855
-    # https: // api.tenor.com / v1 / gifs? < parameters >
-    tenor_token = os.getenv('tenor_token')
-    params = {'key': tenor_token, 'ids': 8193002}
-    # print(params)
-    re = requests.get(f'https://api.tenor.com/v1/gifs', params=params)
-    gif = re.json()['results'][0]['media'][0]['mediumgif']['url']
-    logger.info(gif)
-    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=1000)
+    gif = get_tenor_gif(8193002)
+    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=100)
+
+
+def london999(bot, update):
+    gif = get_tenor_gif(4927885)
+    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=100)
 
 
 def nuclear(bot, update):

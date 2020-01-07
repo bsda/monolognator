@@ -11,6 +11,7 @@ import random
 import flag
 import pycountry
 import config
+import tweepy
 import os
 from operator import itemgetter
 from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slough, get_random_tenor, nuclear, freakout
@@ -28,6 +29,31 @@ counter = {}
 msg_limit = {}
 my_chat_id = 113426151
 gif_path = './gifs/'
+
+
+# Authenticate to Twitter
+auth = tweepy.OAuthHandler("mhdOrmUcG3LnmIvS0lCPpoI6Z",
+                           "PRDvey1VZUzQk7ebNWsbsZbbag6cmO9KJalvzoVlGZ64ZXrYM8")
+auth.set_access_token("78597550-f6IT4Jkmfx6HtW6nBU7r7NQcf9p2ZCzNKWCRoOZsH",
+                      "DrzXjKMZUo5xoY9VCnzxUZEarKkjxrzusSreyJfZr7hPm")
+
+api = tweepy.API(auth)
+
+
+class MyStreamListener(tweepy.StreamListener):
+    def __init__(self, api, bot, update):
+        self.api = api
+        self.me = api.me()
+        self.bot = bot
+        self.update = update
+
+    def on_status(self, tweet):
+        if (not tweet.retweeted) and ('RT @' not in tweet.text) and (not tweet.is_quote_status) and (not tweet.in_reply_to_status_id):
+            send_tweet(self.bot, self.update, f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}')
+
+    def on_error(self, status):
+        print("Error detected")
+
 
 
 
@@ -132,6 +158,10 @@ def wet_score_message(bot, update):
                      timeout=150)
 
 
+def send_tweet(bot, update, tweet):
+    bot.send_message(chat_id=my_chat_id, text=tweet)
+
+
 def word_watcher(bot, update):
     regex = re.compile('(lula|informer|slough|vai ficar tudo bem|calma cara|999London)')
     msg = update.message.text.lower()
@@ -158,6 +188,12 @@ def error(bot, update, error):
 
 
 def main():
+    # Twitter Stuff
+    api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+    tweets_listener = MyStreamListener(api)
+    stream = tweepy.Stream(api.auth, tweets_listener)
+    stream.filter(follow=['4621392093', '78597550'], is_async=True)
+
     method = cfg.get('update-method') or 'polling'
     token = os.getenv('telegram_token')
     updater = Updater(token, request_kwargs={'read_timeout': 6, 'connect_timeout': 7})

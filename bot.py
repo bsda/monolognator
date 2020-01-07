@@ -191,6 +191,7 @@ def error(bot, update, error):
 
 def tweet_stuf(bot, job):
     # Twitter Stuff
+    logger.inf('TWEET STUFF')
     api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
     tweets_listener = MyStreamListener(api, bot, job)
     stream = tweepy.Stream(api.auth, tweets_listener)

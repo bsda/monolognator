@@ -41,15 +41,15 @@ api = tweepy.API(auth)
 
 
 class MyStreamListener(tweepy.StreamListener):
-    def __init__(self, api, bot, update):
+    def __init__(self, api, bot, job):
         self.api = api
         self.me = api.me()
         self.bot = bot
-        self.update = update
+        self.job = job
 
     def on_status(self, tweet):
         if (not tweet.retweeted) and ('RT @' not in tweet.text) and (not tweet.is_quote_status) and (not tweet.in_reply_to_status_id):
-            send_tweet(self.bot, self.update, f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}')
+            send_tweet(self.bot, self.job, f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}')
 
     def on_error(self, status):
         print("Error detected")
@@ -187,12 +187,15 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
-def main():
+def tweet_stuf(bot, job):
     # Twitter Stuff
     api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
-    tweets_listener = MyStreamListener(api)
+    tweets_listener = MyStreamListener(api, bot, job)
     stream = tweepy.Stream(api.auth, tweets_listener)
     stream.filter(follow=['4621392093', '78597550'], is_async=True)
+
+def main():
+
 
     method = cfg.get('update-method') or 'polling'
     token = os.getenv('telegram_token')
@@ -220,6 +223,7 @@ def main():
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
+    tweet_job = j.run_once(tweet_stuf, 10)
     if method == 'polling':
         updater.start_polling(clean=True)
     else:

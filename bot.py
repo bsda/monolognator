@@ -48,6 +48,7 @@ class MyStreamListener(tweepy.StreamListener):
         self.job = job
 
     def on_status(self, tweet):
+        logger.info("ON STATUS")
         if (not tweet.retweeted) and ('RT @' not in tweet.text) and (not tweet.is_quote_status) and (not tweet.in_reply_to_status_id):
             send_tweet(self.bot, self.job, f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}')
 
@@ -158,7 +159,8 @@ def wet_score_message(bot, update):
                      timeout=150)
 
 
-def send_tweet(bot, update, tweet):
+def send_tweet(bot, job, tweet):
+    logger.info('SEND_TWEET_DERP')
     bot.send_message(chat_id=my_chat_id, text=tweet)
 
 
@@ -189,7 +191,7 @@ def error(bot, update, error):
 
 def tweet_stuf(bot, job):
     # Twitter Stuff
-    logger.inf('TWEET STUFF')
+    logger.info('TWEET STUFF')
     api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
     tweets_listener = MyStreamListener(api, bot, job)
     stream = tweepy.Stream(api.auth, tweets_listener)

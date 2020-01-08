@@ -11,9 +11,9 @@ import random
 import flag
 import pycountry
 import config
-import os
+import sys
 from operator import itemgetter
-from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slough, get_random_tenor, nuclear, freakout
+from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slough, get_random_tenor, nuclear, freakout, london999
 from monologue import query_limit, set_limit, handle_counter
 from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather
 
@@ -133,8 +133,10 @@ def wet_score_message(bot, update):
 
 
 def word_watcher(bot, update):
-    regex = re.compile('(lula|informer|slough|vai ficar tudo bem|calma cara|999London)')
+    regex = re.compile('(lula|informer|slough|vai ficar tudo bem|calma cara|999London)', re.IGNORECASE)
     msg = update.message.text.lower()
+    logger.info(f'Start word watcher with {msg}')
+    a = regex.findall(msg)
     for m in regex.findall(msg):
         if m == 'vai ficar tudo bem':
             m = 'nuclear'
@@ -160,7 +162,7 @@ def error(bot, update, error):
 
 def main():
     method = cfg.get('update-method') or 'polling'
-    token = os.getenv('telegram_token')
+    token = cfg.get('telegram_token')
     updater = Updater(token, request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('ping', ping))

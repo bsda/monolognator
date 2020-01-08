@@ -66,7 +66,7 @@ def get_random_giphy(keyword=None):
 # TENOR
 def search_tenor(keyword, offset=0):
     gifs = []
-    tenor_token = os.getenv('tenor_token')
+    tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'media_filter': 'minimal',
               'q': keyword, 'limit': 40, 'pos': offset}
     re = requests.get(f'https://api.tenor.com/v1/search', params=params)
@@ -78,7 +78,7 @@ def search_tenor(keyword, offset=0):
 
 
 def get_random_tenor(keyword):
-    tenor_token = os.getenv('tenor_token')
+    tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'media_filter': 'minimal',
               'q': keyword, 'limit': 50, 'pos': random.choice(range(50))}
     # print(params)
@@ -95,7 +95,7 @@ def send_random_tenor(bot, update, keyword):
 
 
 def get_tenor_gif(gifid):
-    tenor_token = os.getenv('tenor_token')
+    tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'ids': gifid}
     re = requests.get(f'https://api.tenor.com/v1/gifs', params=params)
     gif = re.json()['results'][0]['media'][0]['mediumgif']['url']

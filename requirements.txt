@@ -5,3 +5,4 @@ untappd
 pytz
 pycountry
 emoji-country-flag
+tweepy

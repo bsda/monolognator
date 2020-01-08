@@ -10,15 +10,13 @@ RUN pip install --prefix=/install -r /requirements.txt
 FROM python:3.8-alpine
 
 COPY --from=builder /install /usr/local
-WORKDIR /
-ADD bot.py /
-ADD beer.py /
-ADD gif.py /
-ADD monologue.py /
-ADD weather.py /
-ADD config.py /
-ADD entry.sh /
+WORKDIR /app
+ADD bot.py /app
+ADD beer.py /app
+ADD gif.py /app
+ADD monologue.py /app
+ADD weather.py /app
+ADD config.py /app
+ADD entry.sh /app
 RUN apk add openssl bash
-#RUN pip install pip --upgrade
-RUN chmod +x /entry.sh
-CMD /entry.sh
+ENTRYPOINT [ "python3", "bot.py" ]

@@ -140,7 +140,7 @@ def word_watcher(bot, update):
             m = 'nuclear'
         elif m == 'calma cara':
             m = 'freakout'
-        elif m == '999London':
+        elif m == '999london':
             m = 'london999'
         logger.info(f'word watcher: {m}')
         method = globals()[m]

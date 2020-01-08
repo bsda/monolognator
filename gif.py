@@ -34,7 +34,7 @@ def inlinequery(bot, update):
 # GIPHY
 def search_giphy(keyword, offset=0):
     gifs = []
-    giphy_token = os.getenv('giphy_token')
+    giphy_token = cfg.get('giphy_token')
     params = {'api_key': giphy_token, 'rating': 'r',
               'q': keyword, 'limit': 50, 'offset': offset}
     re = requests.get(f'https://api.giphy.com/v1/gifs/search', params=params)
@@ -45,7 +45,7 @@ def search_giphy(keyword, offset=0):
 
 
 def get_random_giphy(keyword=None):
-    giphy_token=os.getenv('giphy_token')
+    giphy_token=cfg.get('giphy_token')
     # offset = 0
     # gifs = list()
     params = {'api_key': giphy_token, 'rating': 'r'}

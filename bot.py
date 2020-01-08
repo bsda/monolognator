@@ -160,7 +160,7 @@ def error(bot, update, error):
 
 def main():
     method = cfg.get('update-method') or 'polling'
-    token = os.getenv('telegram_token')
+    token = cfg.get('telegram_token')
     updater = Updater(token, request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('ping', ping))

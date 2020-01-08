@@ -1,0 +1,17 @@
+{ "config": {
+	"untappd-users": ["cervejista", "rubesam", "guicane", "georgeum", "Charu", "piripak"],
+	"update-method": "webhook",
+	"webhook-url": "https://monolognator.brunix.net",
+	"port": "8080",
+	"loglevel": "DEBUG",
+	"telegram_token": "xxx,
+    "giphy_token": "xxx",
+    "tenor_token": "xxx",
+    "darksky_token": "xxx,
+    "untappd_client_id": "xxx",
+    "untappd_client_secret": "xxx",
+    "ratebeer_api_key": "xxx"
+	}
+}
+
+

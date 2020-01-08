@@ -11,8 +11,8 @@ def get_untappd_beer(bid, homebrew=False):
     keys = ['bid', 'beer_name', 'beer_label', 'beer_abv', 'rating_score',
             'beer_style', 'beer_description', 'rating_count']
     logger.info(f'Getting beer info for beer_id {bid}')
-    client_id = os.getenv('untappd_client_id')
-    client_secret = os.getenv('untappd_client_secret')
+    client_id = cfg.get('untappd_client_id')
+    client_secret = cfg.get('untappd_client_secret')
     client = untappd.Untappd(client_id=client_id,
                              client_secret=client_secret,
                              redirect_url=None)
@@ -46,8 +46,8 @@ def search_untappd(search, homebrew=False, limit=6):
     keys = ['bid', 'beer_name', 'beer_label', 'beer_abv', 'rating_score',
             'beer_style', 'beer_description', 'rating_count']
     logger.info(f'Searching untappd for {search}')
-    client_id = os.getenv('untappd_client_id')
-    client_secret = os.getenv('untappd_client_secret')
+    client_id = cfg.get('untappd_client_id')
+    client_secret = cfg.get('untappd_client_secret')
     client = untappd.Untappd(client_id=client_id,
                              client_secret=client_secret,
                              redirect_url=None)
@@ -64,8 +64,8 @@ def search_untappd(search, homebrew=False, limit=6):
 
 def get_recent_check_ins(user):
     logger.info(f'Getting {user} check-ins')
-    client_id = os.getenv('untappd_client_id')
-    client_secret = os.getenv('untappd_client_secret')
+    client_id = cfg.get('untappd_client_id')
+    client_secret = cfg.get('untappd_client_secret')
     client = untappd.Untappd(client_id=client_id,
                              client_secret=client_secret,
                              redirect_url=None)

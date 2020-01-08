@@ -142,6 +142,7 @@ def word_watcher(bot, update):
             m = 'freakout'
         elif m == '999London':
             m = 'london999'
+        logger.info(f'word watcher: {m}')
         method = globals()[m]
         method(bot, update)
 

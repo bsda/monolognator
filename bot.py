@@ -160,7 +160,7 @@ def wet_score_message(bot, update):
 
 def send_tweet(bot, job, tweet):
     logger.info('SEND_TWEET_DERP')
-    bot.send_message(chat_id=my_chat_id, text=tweet)
+    bot.send_message(chat_id=-1001105653255, text=tweet)
 
 
 def word_watcher(bot, update):
@@ -197,7 +197,12 @@ def tweet_stuf(bot, job):
     api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
     tweets_listener = MyStreamListener(api, bot, job)
     stream = tweepy.Stream(api.auth, tweets_listener)
-    stream.filter(follow=['4621392093', '78597550'], is_async=True)
+    # stream.filter(follow=['4621392093', '78597550'], is_async=True)
+    tracking = ['#SW16','#SW17', '#SW19', '#SW20', '#SW2', '#Croydon', '#Wandsworth', '#Hackney', 'Croydon',
+                '#Tooting', '#Heathrow', '#Gatwick', '#Stanstead', '#Battersea', '#CrystalPalace', '#Putney',
+                '#Clapham', '#FinsburyPark']
+    stream.filter(follow=['4621392093'], is_async=True)
+
 
 def main():
 

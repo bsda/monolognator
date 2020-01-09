@@ -1,9 +1,11 @@
 users:
   78597550:
+    name: eu
     type: string
     filter:
       - derp
   4621392093:
+    name: 999London
     type: string
     filter:
      - "#SW16"
@@ -25,14 +27,16 @@ users:
      - "#Clapham"
      - "#FinsburyPark"
   2892290499:
+    name: Olavo
     type: string
     filter:
       - cu
       - cus
       - viado
   25073877:
+    name: Trump
     type: string
-    filter:
+    filter: disabled
 
 
 

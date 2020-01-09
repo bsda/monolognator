@@ -11,11 +11,14 @@ import random
 import flag
 import pycountry
 import config
-import sys
+import tweepy
+import yaml
+import json
 from operator import itemgetter
 from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slough, get_random_tenor, nuclear, freakout, london999
 from monologue import query_limit, set_limit, handle_counter
 from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather
+import twitter
 
 cfg = config.cfg()
 
@@ -27,7 +30,59 @@ logger = logging.getLogger(__name__)
 counter = {}
 msg_limit = {}
 my_chat_id = 113426151
+my_group = -1001105653255
 gif_path = './gifs/'
+
+with open('filters.yml') as f:
+    twitter_filters = yaml.load(f, Loader=yaml.FullLoader)['users']
+
+# Authenticate to Twitter
+def start_twitter_stream():
+    auth = tweepy.OAuthHandler(cfg.get('twitter_api_key'),
+                               cfg.get('twitter_api_secret'))
+    auth.set_access_token(cfg.get('twitter_token'),
+                          cfg.get('twitter_token_secret'))
+
+    api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+    tweets_listener = twitter.Stream(api)
+    stream = tweepy.Stream(api.auth, tweets_listener)
+    stream.filter(follow=[str(a) for a in twitter_filters.keys()], is_async=True)
+
+
+def filter_tweet(tweet):
+    # logger.info('Filtering tweets')
+    user_id = tweet.user.id
+    name = tweet.user.screen_name
+    text = tweet.text
+    logger.debug(f'Tweet from {user_id}, {name}')
+    if user_id in twitter_filters:
+        user = twitter_filters.get(tweet.user.id)
+        filter = user.get('filter')
+        type = user.get('type')
+        text = text.lower()
+        if filter:
+            if type == 'string':
+                if any(word.lower() in text for word in filter):
+                    return f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}'
+            if type == 'regex':
+                rex = re.compile(filter)
+                if rex.findall(text, re.IGNORECASE):
+                    return f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}'
+            return f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}'
+    # logger.info(f'Dropping tweet from {name}, {user_id}, {text}, ')
+    return None
+
+
+def send_tweets(bot, update):
+    logger.debug('Checking queue')
+    q = twitter.tqueue
+    while not q.empty():
+        tweet = q.get()
+        url = filter_tweet(tweet)
+        if url:
+            logger.info(f'Sending tweet from {tweet.screen_name}')
+            bot.send_message(chat_id=my_chat_id, text=url)
+
 
 
 
@@ -132,6 +187,11 @@ def wet_score_message(bot, update):
                      timeout=150)
 
 
+def send_tweet(bot, job, tweet):
+    logger.info('SEND_TWEET_DERP')
+    bot.send_message(chat_id=-1001105653255, text=tweet)
+
+
 def word_watcher(bot, update):
     regex = re.compile('(lula|informer|slough|vai ficar tudo bem|calma cara|999London)', re.IGNORECASE)
     msg = update.message.text.lower()
@@ -160,7 +220,21 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
+# def tweet_stuf(bot, job):
+#     # Twitter Stuff
+#     logger.info('TWEET STUFF')
+#     api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+#     tweets_listener = MyStreamListener(api, bot, job)
+#     stream = tweepy.Stream(api.auth, tweets_listener)
+#     # stream.filter(follow=['4621392093', '78597550'], is_async=True)
+#     tracking = ['#SW16','#SW17', '#SW19', '#SW20', '#SW2', '#Croydon', '#Wandsworth', '#Hackney', 'Croydon',
+#                 '#Tooting', '#Heathrow', '#Gatwick', '#Stanstead', '#Battersea', '#CrystalPalace', '#Putney',
+#                 '#Clapham', '#FinsburyPark']
+#     stream.filter(follow=['4621392093'], is_async=True)
+
+
 def main():
+    start_twitter_stream()
     method = cfg.get('update-method') or 'polling'
     token = cfg.get('telegram_token')
     updater = Updater(token, request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
@@ -187,6 +261,7 @@ def main():
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
+    tweet_job = j.run_repeating(send_tweets, 10)
     if method == 'polling':
         updater.start_polling(clean=True)
     else:

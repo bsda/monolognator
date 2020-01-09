@@ -19,6 +19,7 @@ from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slo
 from monologue import query_limit, set_limit, handle_counter
 from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather
 import twitter
+import string
 
 cfg = config.cfg()
 

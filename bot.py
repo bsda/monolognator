@@ -57,17 +57,21 @@ def filter_tweet(tweet):
     logger.debug(f'Tweet from {user_id}, {name}')
     if user_id in twitter_filters:
         user = twitter_filters.get(tweet.user.id)
-        filter = user.get('filter')
-        type = user.get('type')
+        user_filter = user.get('filter')
+        filter_type = user.get('type')
         text = text.lower()
-        if filter:
-            if type == 'string':
-                if any(word.lower() in text for word in filter):
+        logger.info(f'TWEET FROM {name}: {text}')
+        if user_filter:
+            if filter_type == 'string':
+                if any(word.lower() in text for word in user_filter):
+                    logger.info(f'Filter match for {name}, type:{filter_type}')
                     return f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}'
-            if type == 'regex':
-                rex = re.compile(filter)
+            if filter_type == 'regex':
+                rex = re.compile(user_filter)
                 if rex.findall(text, re.IGNORECASE):
+                    logger.info(f'Filter match for {name}, type:{filter_type}')
                     return f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}'
+        logger.info(f'Filter match for {name}, empty filter')
         return f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}'
     # logger.info(f'Dropping tweet from {name}, {user_id}, {text}, ')
     return None

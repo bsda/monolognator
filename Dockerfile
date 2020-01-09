@@ -17,6 +17,7 @@ ADD gif.py /app
 ADD monologue.py /app
 ADD weather.py /app
 ADD config.py /app
+ADD twitter.py /app
 ADD entry.sh /app
 RUN apk add openssl bash
 ENTRYPOINT [ "python3", "bot.py" ]

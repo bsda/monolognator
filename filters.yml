@@ -1,0 +1,36 @@
+users:
+  78597550:
+    type: string
+    filter:
+      - derp
+  4621392093:
+    type: string
+    filter:
+     - "#SW16"
+     - "#SW17"
+     - "#SW19"
+     - "#SW20"
+     - "#SW2"
+     - "#Croydon"
+     - "#Wandsworth"
+     - "#Hackney"
+     - "Croydon"
+     - "#Tooting"
+     - "#Heathrow"
+     - "#Gatwick"
+     - "#Stanstead"
+     - "#Battersea"
+     - "#CrystalPalace"
+     - "#Putney"
+     - "#Clapham"
+     - "#FinsburyPark"
+  2892290499:
+    type: regex
+    filter: \W(cu|cus)\W
+  25073877:
+    type: string
+    filter:
+
+
+
+

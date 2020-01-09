@@ -1,3 +1,4 @@
+PyYAML
 python-telegram-bot
 requests
 geopy

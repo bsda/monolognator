@@ -80,7 +80,7 @@ def send_tweets(bot, update):
         tweet = q.get()
         url = filter_tweet(tweet)
         if url:
-            logger.info(f'Sending tweet from {tweet.screen_name}')
+            logger.info(f'Sending tweet from {tweet.user.screen_name}')
             bot.send_message(chat_id=my_chat_id, text=url)
 
 

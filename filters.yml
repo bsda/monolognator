@@ -25,8 +25,11 @@ users:
      - "#Clapham"
      - "#FinsburyPark"
   2892290499:
-    type: regex
-    filter: \W(cu|cus)\W
+    type: string
+    filter:
+      - cu
+      - cus
+      - viado
   25073877:
     type: string
     filter:

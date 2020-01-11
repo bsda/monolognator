@@ -1,0 +1,9 @@
+steps:
+  - id: build
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/peppy-house-263912/monolognator', '.']
+  - id: push
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/peppy-house-263912/monolognator']
+    tags: ['latest']
+    waitFor: build

@@ -8,24 +8,24 @@ users:
     name: 999London
     type: string
     filter:
-     - "#SW16"
-     - "#SW17"
-     - "#SW19"
-     - "#SW20"
-     - "#SW2"
-     - "#Croydon"
-     - "#Wandsworth"
-     - "#Hackney"
-     - "Croydon"
-     - "#Tooting"
-     - "#Heathrow"
-     - "#Gatwick"
-     - "#Stanstead"
-     - "#Battersea"
-     - "#CrystalPalace"
-     - "#Putney"
-     - "#Clapham"
-     - "#FinsburyPark"
+      - "#SW16"
+      - "#SW17"
+      - "#SW19"
+      - "#SW20"
+      - "#SW2"
+      - "#Croydon"
+      - "#Wandsworth"
+      - "#Hackney"
+      - "Croydon"
+      - "#Tooting"
+      - "#Heathrow"
+      - "#Gatwick"
+      - "#Stanstead"
+      - "#Battersea"
+      - "#CrystalPalace"
+      - "#Putney"
+      - "#Clapham"
+      - "#FinsburyPark"
   2892290499:
     name: Olavo
     type: string
@@ -33,10 +33,7 @@ users:
       - cu
       - cus
       - viado
-  25073877:
-    name: Trump
-    type: string
-    filter: disabled
+      - puta
 
 
 

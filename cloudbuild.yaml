@@ -6,4 +6,4 @@ steps:
     name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/peppy-house-263912/monolognator']
     tags: ['latest']
-    waitFor: build
+    waitFor: 'build'

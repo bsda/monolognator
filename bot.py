@@ -264,7 +264,7 @@ def main():
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
     tweet_job = j.run_repeating(send_tweets, interval=60, first=20)
-    corona_job = j.run_repeating(corona_update, inbterval=60, first=20)
+    corona_job = j.run_repeating(corona_update, interval=60, first=20)
     if method == 'polling':
         updater.start_polling(clean=True)
     else:

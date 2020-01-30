@@ -18,6 +18,7 @@ from operator import itemgetter
 from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slough, get_random_tenor, nuclear, freakout, london999
 from monologue import query_limit, set_limit, handle_counter
 from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather
+import corona
 import twitter
 import string
 
@@ -216,6 +217,13 @@ def word_watcher(bot, update):
         method(bot, update)
 
 
+def corona_update(bot, update):
+    text = corona.status()
+    if text:
+        bot.send_message(bot.send_message(chat_id=group_id, text=text))
+
+
+
 def ping(bot, update):
     gif = get_random_giphy(keyword='pong')
     bot.send_document(chat_id=update.message.chat_id,
@@ -256,6 +264,7 @@ def main():
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
     tweet_job = j.run_repeating(send_tweets, 10)
+    corona_job = j.run_repeating(corona_update, 10)
     if method == 'polling':
         updater.start_polling(clean=True)
     else:

@@ -29,6 +29,6 @@ def status():
         body = res.get('details').get('body')
         soup = BeautifulSoup(body.split('<h2')[1],  features='html.parser')
         text = soup.text.replace(' id="situation-in-the-uk">', '')
-        text = f'Latest Update: {updated_at}\n\n' + text
+        text = f'*Latest Update:  {updated_at}*\n\n' + text
 
         return text

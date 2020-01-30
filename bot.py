@@ -220,8 +220,7 @@ def word_watcher(bot, update):
 def corona_update(bot, update):
     text = corona.status()
     if text:
-        bot.send_message(bot.send_message(chat_id=group_id, text=text))
-
+        bot.send_message(chat_id=group_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def ping(bot, update):

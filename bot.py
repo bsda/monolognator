@@ -263,8 +263,8 @@ def main():
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
-    tweet_job = j.run_repeating(send_tweets, 10)
-    corona_job = j.run_repeating(corona_update, 10)
+    tweet_job = j.run_repeating(send_tweets, 1)
+    corona_job = j.run_repeating(corona_update, 1)
     if method == 'polling':
         updater.start_polling(clean=True)
     else:

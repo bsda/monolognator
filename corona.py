@@ -6,9 +6,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-
 def status():
-
+    logger.info('Checking corona update')
     if not os.path.exists('/tmp/corona.txt'):
         with open('/tmp/corona.txt', 'w') as file:
             old = '2000-01-01T00:00:00.000Z'
@@ -30,5 +29,6 @@ def status():
         body = res.get('details').get('body')
         soup = BeautifulSoup(body.split('<h2')[1],  features='html.parser')
         text = soup.text.replace(' id="situation-in-the-uk">', '')
+        text = f'Latest Update: {updated_at}\n\n' + text
 
         return text

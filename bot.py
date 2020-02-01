@@ -257,7 +257,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('beer2', beer_search_menu))
     updater.dispatcher.add_handler(CommandHandler('dry', dry_score_message))
     updater.dispatcher.add_handler(CommandHandler('wet', wet_score_message))
-    updater.dispatcher.add_handler(CommandHandler('corona', get_corona()))
+    updater.dispatcher.add_handler(CommandHandler('corona', get_corona))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     word_watcher_regex = re.compile('.*(lula|informer|slough|vai ficar tudo bem|calma cara|999London).*', re.IGNORECASE)
     updater.dispatcher.add_handler(RegexHandler(word_watcher_regex, word_watcher))

@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def status():
+def status(ignore_last_update=False):
     logger.debug('Checking corona update')
     if not os.path.exists('/tmp/corona.txt'):
         with open('/tmp/corona.txt', 'w') as file:
@@ -21,7 +21,8 @@ def status():
     res = requests.get(url).json()
     updated_at = res.get('updated_at')
     updated_at_obj = datetime.strptime(updated_at, '%Y-%m-%dT%H:%M:%S.%fZ')
-    if updated_at_obj > last_update:
+
+    if updated_at_obj > last_update or ignore_last_update:
         logger.info('Sending Corona update')
         with open('/tmp/corona.txt', 'w') as file:
             file.write(str(updated_at))

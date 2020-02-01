@@ -223,6 +223,12 @@ def corona_update(bot, update):
         bot.send_message(chat_id=group_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
 
 
+def get_corona(bot, update):
+    text = corona.status(True)
+    if text:
+        bot.send_document(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
+
+
 def ping(bot, update):
     gif = get_random_giphy(keyword='pong')
     bot.send_document(chat_id=update.message.chat_id,
@@ -251,6 +257,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('beer2', beer_search_menu))
     updater.dispatcher.add_handler(CommandHandler('dry', dry_score_message))
     updater.dispatcher.add_handler(CommandHandler('wet', wet_score_message))
+    updater.dispatcher.add_handler(CommandHandler('corona', get_corona()))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     word_watcher_regex = re.compile('.*(lula|informer|slough|vai ficar tudo bem|calma cara|999London).*', re.IGNORECASE)
     updater.dispatcher.add_handler(RegexHandler(word_watcher_regex, word_watcher))
@@ -263,7 +270,7 @@ def main():
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
     tweet_job = j.run_repeating(send_tweets, interval=60, first=20)
-    corona_job = j.run_repeating(corona_update, interval=1200, first=20)
+    # corona_job = j.run_repeating(corona_update, interval=1200, first=20)
     if method == 'polling':
         updater.start_polling(clean=True)
     else:

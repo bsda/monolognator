@@ -48,7 +48,17 @@ def start_twitter_stream():
     api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
     tweets_listener = twitter.Stream(api)
     stream = tweepy.Stream(api.auth, tweets_listener)
-    stream.filter(follow=[str(a) for a in twitter_filters.keys()], is_async=True)
+    try:
+        print('Starting Stream filter')
+        stream.filter(follow=[str(a) for a in twitter_filters.keys()], is_async=True)
+    except tweepy.TweepError as e:
+        stream.disconnect()
+        logger.exception(f"TweepyError exception: {e}")
+        start_twitter_stream()
+    except Exception:
+        stream.disconnect()
+        logger.exception("Fatal exception. Consult logs.")
+        start_twitter_stream()
 
 
 def filter_tweet(tweet):
@@ -90,7 +100,7 @@ def filter_tweet(tweet):
 
 
 def send_tweets(bot, update):
-    logger.debug('Checking queue')
+    logger.info('Checking queue')
     q = twitter.tqueue
     while not q.empty():
         tweet = q.get()

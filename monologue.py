@@ -192,7 +192,7 @@ def handle_counter(bot, update):
                 f' from {update.message.from_user.first_name}({user}): {update.message.text}')
 
     # If it's a new user or the count was reset earlier
-    if chat not in counter or user not in counter[chat]:
+    if chat not in counter or user not in counter[chat] and not message.reply_to_message:
         initialize_count(chat, user, update)
     else:
         # if we seen the user before, check if previous msg was by the same user

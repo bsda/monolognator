@@ -17,7 +17,7 @@ def status(ignore_last_update=False):
         last_update = file.read().splitlines()[0]
         last_update = datetime.strptime(last_update, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    url = 'https://www.gov.uk/api/content/guidance/wuhan-novel-coronavirus-information-for-the-public'
+    url = 'https://www.gov.uk/api/content/guidance/coronavirus-covid-19-information-for-the-public'
     res = requests.get(url).json()
     updated_at = res.get('updated_at')
     updated_at_obj = datetime.strptime(updated_at, '%Y-%m-%dT%H:%M:%S.%fZ')

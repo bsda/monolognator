@@ -40,7 +40,7 @@ def status(ignore_last_update=False):
             if row:
                 rows.append(row)
 
-        fancy_table = (tabulate(rows, headers=['Region', 'Cases'], tablefmt='github'))
+        fancy_table = (tabulate(rows, headers=['Region', 'Cases'], tablefmt='simple'))
 
         text = soup.text.replace(' id="number-of-cases">', '')
         text = re.sub('(?m)Cases identified[^$]+', '', text)

@@ -3,6 +3,8 @@ from datetime import datetime
 import os
 from bs4 import BeautifulSoup
 import logging
+import re
+from tabulate import tabulate
 logger = logging.getLogger(__name__)
 
 
@@ -29,7 +31,20 @@ def status(ignore_last_update=False):
 
         body = res.get('details').get('body')
         soup = BeautifulSoup(body.split('<h2')[1],  features='html.parser')
-        text = soup.text.replace(' id="situation-in-the-uk">', '')
-        text = f'*Latest Update:  {updated_at}*\n\n' + text
+        table = soup.table
+        table_rows = table.find_all('tr')
+        rows = list()
+        for tr in table_rows:
+            td = tr.find_all('td')
+            row = [i.text for i in td]
+            if row:
+                rows.append(row)
+
+        fancy_table = (tabulate(rows, headers=['Region', 'Cases'], tablefmt='github'))
+
+        text = soup.text.replace(' id="number-of-cases">', '')
+        text = re.sub('(?m)Cases identified[^$]+', '', text)
+        text = f'Latest Update:  {updated_at}\n\n {text} \n\nCases by region:\n\n<pre>{fancy_table}</pre>'
 
         return text
+

@@ -240,7 +240,7 @@ def corona_update(bot, update):
 def get_corona(bot, update):
     text = corona.status(True)
     if text:
-        bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
+        bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
 
 
 def ping(bot, update):

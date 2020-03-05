@@ -21,12 +21,12 @@ from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_
 import corona
 import twitter
 import string
+from urllib3.exceptions import ProtocolError
+
 
 cfg = config.cfg()
 
 
-logging.basicConfig(level=cfg.get('loglevel', 'INFO'),
-                    format='%(asctime)s - %(funcName)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 counter = {}
@@ -49,15 +49,19 @@ def start_twitter_stream():
     tweets_listener = twitter.Stream(api)
     stream = tweepy.Stream(api.auth, tweets_listener)
     try:
-        print('Starting Stream filter')
+        logger.info('Starting Stream filter')
         stream.filter(follow=[str(a) for a in twitter_filters.keys()], is_async=True)
     except tweepy.TweepError as e:
         stream.disconnect()
-        logger.exception(f"TweepyError exception: {e}")
+        logger.error(f"TweepyError exception: {e}")
+        start_twitter_stream()
+    except (ProtocolError, AttributeError) as e:
+        stream.disconnect()
+        logger.error(f"TweepyError exception: {e}")
         start_twitter_stream()
     except Exception:
         stream.disconnect()
-        logger.exception("Fatal exception. Consult logs.")
+        logger.error("Fatal exception. Consult logs.")
         start_twitter_stream()
 
 
@@ -251,6 +255,8 @@ def error(bot, update, error):
 
 
 def main():
+    logging.basicConfig(level=cfg.get('loglevel', 'INFO'),
+                        format='%(asctime)s - %(funcName)s - %(levelname)s - %(message)s')
     start_twitter_stream()
     method = cfg.get('update-method') or 'polling'
     token = cfg.get('telegram_token')

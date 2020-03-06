@@ -30,14 +30,13 @@ def status(ignore_last_update=False):
             file.write(str(updated_at))
 
         body = res.get('details').get('body')
-        body.replace(' and Yorkshire', '')
         soup = BeautifulSoup(body.split('<h2')[1],  features='html.parser')
         table = soup.table
         table_rows = table.find_all('tr')
         rows = list()
         for tr in table_rows:
             td = tr.find_all('td')
-            row = [i.text for i in td]
+            row = [i.text.replace(' and Yorkshire', '') for i in td]
             if row:
                 rows.append(row)
 

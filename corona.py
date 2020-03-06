@@ -30,6 +30,7 @@ def status(ignore_last_update=False):
             file.write(str(updated_at))
 
         body = res.get('details').get('body')
+        body.replace(' and Yorkshire', '')
         soup = BeautifulSoup(body.split('<h2')[1],  features='html.parser')
         table = soup.table
         table_rows = table.find_all('tr')

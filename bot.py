@@ -232,13 +232,13 @@ def word_watcher(bot, update):
 
 
 def corona_update(bot, update):
-    text = corona.status()
+    text = corona.corona_uk()
     if text:
         bot.send_message(chat_id=group_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def get_corona(bot, update):
-    text = corona.status(True)
+    text = corona.corona()
     if text:
         bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
 

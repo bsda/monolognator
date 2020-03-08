@@ -8,7 +8,14 @@ from tabulate import tabulate
 logger = logging.getLogger(__name__)
 
 
-def status(ignore_last_update=False):
+def corona():
+    uk = corona_uk(True)
+    world = corona_world()
+    text = f'{uk}\n\n{world}'
+    return text
+
+
+def corona_uk(ignore_last_update=False):
     logger.debug('Checking corona update')
     if not os.path.exists('/tmp/corona.txt'):
         with open('/tmp/corona.txt', 'w') as file:
@@ -45,15 +52,14 @@ def status(ignore_last_update=False):
 
         text = soup.text.replace(' id="number-of-cases">', '')
         text = re.sub('(?m)Cases identified[^$]+', '', text)
-        text = f'Latest Update:  {updated_at}\n\n {text} \n\nCases by region:\n\n<pre>{fancy_table}</pre>\n\n'
-        text = text + 'Numbers for relevant countries:\n\n'
-        text = text + f'<pre>{corona_world()}</pre>'
+        text = f'<b>UK Latest Update: {updated_at}</b>\n{text}\nCases by region:\n\n<pre>{fancy_table}</pre>'
+
 
         return text
 
 
-def corona_world():
-    countries = ['Italy', 'UK', 'France', 'Spain', 'Switzerland', 'USA', 'Greece', 'Brazil']
+def corona_world(countries=['Italy', 'UK', 'France', 'Spain', 'Switzerland', 'USA', 'Greece', 'Brazil']):
+    countries.append('Total:')
     url = 'https://www.worldometers.info/coronavirus/'
     r = requests.get(url)
     soup = BeautifulSoup(r.text, features='html.parser')
@@ -66,12 +72,17 @@ def corona_world():
         if row and row[0] in countries:
             if row[0] == 'Switzerland':
                 row[0] = 'Swiss'
+            if row[0] == 'Total:':
+                row[0] = 'Global'
             cases = row[1].replace(',', '') or 0
             deaths = row[2].replace(',', '') or 0
             cfr = round(int(deaths) / int(cases) * 100, 2)
             cfr = f'{cfr}%'
             row.append(cfr)
             rows.append(row)
-    fancy_table = (tabulate(rows, headers=['Country', 'Cases', '💀', 'CFR'], tablefmt='simple'))
-    return fancy_table
+    fancy_table = (tabulate(rows, headers=['Country', 'Cases', '☠️', 'CFR'], tablefmt='simple'))
+
+    text = 'Numbers for relevant countries:\n\n'
+    text = text + f'<pre>{fancy_table}</pre>'
+    return text
 

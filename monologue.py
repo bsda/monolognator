@@ -197,7 +197,7 @@ def handle_counter(bot, update):
     else:
         # if we seen the user before, check if previous msg was by the same user
         # if it was, increase counter and add msgs
-        if user == counter[chat]['latest_by'] and not message.reply_to_message:
+        if user == counter[chat].get('latest_by') and not message.reply_to_message:
             add_count(chat, user, update)
             logger.info(f'Count for {update.message.from_user.first_name}'
                         f' on {update.message.chat.title}: {get_count(chat, user)}')

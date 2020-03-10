@@ -8,10 +8,10 @@ from tabulate import tabulate
 logger = logging.getLogger(__name__)
 
 
-def corona():
-    uk = corona_uk(True)
-    world = corona_world()
-    text = f'{uk}\n\n{world}'
+def corona(countries=['italy', 'uk', 'france', 'spain', 'switzerland', 'usa', 'greece', 'brazil']):
+    # uk = corona_uk(True)
+    world = corona_world(countries)
+    text = f'{world}'
     return text
 
 
@@ -58,8 +58,8 @@ def corona_uk(ignore_last_update=False):
         return text
 
 
-def corona_world(countries=['Italy', 'UK', 'France', 'Spain', 'Switzerland', 'USA', 'Greece', 'Brazil']):
-    countries.append('Total:')
+def corona_world(countries):
+    countries.append('total:')
     url = 'https://www.worldometers.info/coronavirus/'
     r = requests.get(url)
     soup = BeautifulSoup(r.text, features='html.parser')
@@ -68,21 +68,24 @@ def corona_world(countries=['Italy', 'UK', 'France', 'Spain', 'Switzerland', 'US
     rows = list()
     for tr in table_rows:
         td = tr.find_all('td')
-        row = [i.text.replace(' ', '') for i in td[0:2] + td[3:4]]
-        if row and row[0] in countries:
+        row = [i.text.replace(' ', '').replace(',', '') for i in td[0:4]]
+        if row and row[0].lower() in countries:
             if row[0] == 'Switzerland':
                 row[0] = 'Swiss'
             if row[0] == 'Total:':
                 row[0] = 'Global'
-            cases = row[1].replace(',', '') or 0
-            deaths = row[2].replace(',', '') or 0
-            cfr = round(int(deaths) / int(cases) * 100, 2)
-            cfr = f'{cfr}%'
-            row.append(cfr)
+            # row[1].replace(',', '')
+            # deaths = row[2].replace(',', '') or 0
+            # cfr = round(int(deaths) / int(cases) * 100, 2)
+            # cfr = f'{cfr}%'
+            # row.append(cfr)
             rows.append(row)
-    fancy_table = (tabulate(rows, headers=['Country', 'Cases', '☠️', 'CFR'], tablefmt='simple'))
+    fancy_table = (tabulate(rows, headers=['Country', 'Cases', 'New', '☠️'], tablefmt='simple'))
 
     text = 'Numbers for relevant countries:\n\n'
     text = text + f'<pre>{fancy_table}</pre>'
     return text
 
+
+# a = corona_world(['Italy', 'UK', 'France', 'Spain', 'Switzerland', 'USA', 'Greece', 'Brazil'])
+# print(a)

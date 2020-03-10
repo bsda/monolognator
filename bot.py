@@ -238,7 +238,14 @@ def corona_update(bot, update):
 
 
 def get_corona(bot, update):
-    text = corona.corona()
+    text = update.message.text.split('/corona ')
+    l = len(text)
+    if len(text) > 1:
+        countries = text[1].split(',')
+        countries = [i.lower().replace(' ', '') for i in countries]
+        text = corona.corona(countries)
+    else:
+        text = corona.corona()
     if text:
         bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
 

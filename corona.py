@@ -80,7 +80,7 @@ def corona_world(countries):
                 row[0] = 'Suisse'
             if row[0] == 'Total:':
                 row[0] = 'Global'
-                # row[1] = f'{row[1][0:3]}k'
+                row[1] = f'{row[1][0:3]}k'
             # row[1].replace(',', '')
             # deaths = row[2].replace(',', '') or 0
             # cfr = round(int(deaths) / int(cases) * 100, 2)

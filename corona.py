@@ -5,7 +5,29 @@ from bs4 import BeautifulSoup
 import logging
 import re
 from tabulate import tabulate
+
+import flag
+import pycountry
 logger = logging.getLogger(__name__)
+
+
+def emojify(country):
+    if country == 'England':
+        return '🏴󠁧󠁢󠁥󠁮󠁧󠁿󠁧󠁢󠁳󠁣󠁴󠁿'
+    if country == 'Scotland':
+        return '🏴󠁧󠁢󠁳󠁣󠁴󠁿'
+    if country == 'Russia':
+        country = 'Russian Federation'
+    if country == 'USA':
+        country = "United States"
+    if country == 'UK':
+        country = 'United Kingdom'
+    try:
+        alpha_2 = pycountry.countries.get(name=country).alpha_2
+        emoji = flag.flagize(f':{alpha_2}:')
+    except Exception:
+        return country
+    return emoji
 
 
 def corona(countries=['italy', 'uk', 'france', 'spain', 'switzerland', 'usa', 'greece', 'brazil']):
@@ -61,7 +83,7 @@ def corona_uk(ignore_last_update=False):
 def corona_world(countries):
     countries.append('total:')
     url = 'https://www.worldometers.info/coronavirus/'
-    r = requests.get(url)
+    r = requests.get(url, timeout=2)
     soup = BeautifulSoup(r.text, features='html.parser')
     table = soup.table
     table_rows = table.find_all('tr')
@@ -70,22 +92,27 @@ def corona_world(countries):
         td = tr.find_all('td')
         row = [i.text.replace(' ', '').replace(',', '') for i in td[0:4]]
         if row and row[0].lower() in countries:
-            if row[0] == 'Switzerland':
-                row[0] = 'Swiss'
+            row[0] = emojify(row[0])
+            # if row[0] == 'Switzerland':
+            #     row[0] = 'Swiss'
             if row[0] == 'Total:':
-                row[0] = 'Global'
+                row[0] = '🌎'
+                row[1] = f'{row[1][0:3]}k'
+                row[2] = f'+{row[2]}'
+            if row[3] == '':
+                row[3] = 0
             # row[1].replace(',', '')
             # deaths = row[2].replace(',', '') or 0
             # cfr = round(int(deaths) / int(cases) * 100, 2)
             # cfr = f'{cfr}%'
             # row.append(cfr)
             rows.append(row)
-    fancy_table = (tabulate(rows, headers=['Country', 'Cases', 'New', '☠️'], tablefmt='simple'))
+    fancy_table = (tabulate(rows, headers=['🗺️',  '💼 ', '🎁', '☠'], tablefmt='simple', numalign='right', stralign='right'))
 
     text = 'Numbers for relevant countries:\n\n'
-    text = text + f'<pre>{fancy_table}</pre>'
+    text = text + f'{fancy_table}'
     return text
 
 
-# a = corona_world(['Italy', 'UK', 'France', 'Spain', 'Switzerland', 'USA', 'Greece', 'Brazil'])
+# a = corona()
 # print(a)

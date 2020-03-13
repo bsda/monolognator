@@ -4,7 +4,9 @@ import os
 from bs4 import BeautifulSoup
 import logging
 import re
-from tabulate import tabulate
+# from tabulate import tabulate
+import tabulate
+tabulate.MIN_PADDING = 0
 logger = logging.getLogger(__name__)
 
 
@@ -47,7 +49,7 @@ def corona_uk(ignore_last_update=False):
             if row:
                 rows.append(row)
 
-        fancy_table = (tabulate(rows, headers=['Region', 'Cases'], tablefmt='simple'))
+        fancy_table = (tabulate.tabulate(rows, headers=['Region', 'Cases'], tablefmt='simple'))
 
 
         text = soup.text.replace(' id="number-of-cases">', '')
@@ -87,7 +89,7 @@ def corona_world(countries):
             # cfr = f'{cfr}%'
             # row.append(cfr)
             rows.append(row)
-    fancy_table = tabulate(rows, headers=['Country', 'Cases', 'New', '☠️'], tablefmt='simple', numalign='right')
+    fancy_table = tabulate.tabulate(rows, headers=['Pais', 'Case', 'New', '☠️'], tablefmt='simple', numalign='right')
     # global_table = tabulate(global_row, tablefmt='simple')
     #
     text = 'Numbers for relevant countries:\n\n'

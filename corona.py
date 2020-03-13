@@ -95,5 +95,5 @@ def corona_world(countries):
     return text
 
 
-a = corona()
-print(a)
+# a = corona()
+# print(a)

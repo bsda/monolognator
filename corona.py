@@ -68,24 +68,32 @@ def corona_world(countries):
     rows = list()
     for tr in table_rows:
         td = tr.find_all('td')
-        row = [i.text.replace(' ', '').replace(',', '') for i in td[0:4]]
+        row = [i.text.replace(' ', '').replace(',', '').replace('+', '') for i in td[0:4]]
         if row and row[0].lower() in countries:
+            row[1] = int(row[1])
+            if not row[2]:
+                row[2] = 0
+            row[2] = int(row[2])
+            if not row[3]:
+                row[3] = 0
             if row[0] == 'Switzerland':
-                row[0] = 'Swiss'
+                row[0] = 'Suisse'
             if row[0] == 'Total:':
                 row[0] = 'Global'
+                # row[1] = f'{row[1][0:3]}k'
             # row[1].replace(',', '')
             # deaths = row[2].replace(',', '') or 0
             # cfr = round(int(deaths) / int(cases) * 100, 2)
             # cfr = f'{cfr}%'
             # row.append(cfr)
             rows.append(row)
-    fancy_table = (tabulate(rows, headers=['Country', 'Cases', 'New', '☠️'], tablefmt='simple'))
-
+    fancy_table = tabulate(rows, headers=['Country', 'Cases', 'New', '☠️'], tablefmt='simple', numalign='right')
+    # global_table = tabulate(global_row, tablefmt='simple')
+    #
     text = 'Numbers for relevant countries:\n\n'
-    text = text + f'<pre>{fancy_table}</pre>'
+    text = text + f'<pre>\n{fancy_table}\n</pre>'
     return text
 
 
-# a = corona_world(['Italy', 'UK', 'France', 'Spain', 'Switzerland', 'USA', 'Greece', 'Brazil'])
-# print(a)
+a = corona()
+print(a)

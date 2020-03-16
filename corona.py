@@ -61,6 +61,7 @@ def corona_uk(ignore_last_update=False):
 
 
 def corona_world(countries):
+
     countries.append('total:')
     url = 'https://www.worldometers.info/coronavirus/'
     r = requests.get(url)
@@ -70,8 +71,8 @@ def corona_world(countries):
     rows = list()
     for tr in table_rows:
         td = tr.find_all('td')
-        row = [i.text.replace(' ', '').replace(',', '').replace('+', '') for i in td[0:4]]
-        if row and row[0].lower() in countries:
+        row = [i.text.strip(' ').replace(',', '').replace('+', '') for i in td[0:4]]
+        if row and ((row[0].lower() in countries) or ('all' in countries)):
             row[1] = int(row[1])
             if not row[2]:
                 row[2] = 0
@@ -92,10 +93,10 @@ def corona_world(countries):
     fancy_table = tabulate.tabulate(rows, headers=['Pais', 'Case', 'New', '☠️'], tablefmt='simple', numalign='right')
     # global_table = tabulate(global_row, tablefmt='simple')
     #
-    text = 'Numbers for relevant countries:\n\n'
-    text = text + f'<pre>\n{fancy_table}\n</pre>'
+    # text = 'Numbers for relevant countries:\n\n'
+    text = f'<pre>\n{fancy_table}\n</pre>'
     return text
 
 
-# a = corona()
+# a = corona(['all',])
 # print(a)

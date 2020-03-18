@@ -14,6 +14,7 @@ import config
 import tweepy
 import yaml
 import json
+import covid
 from operator import itemgetter
 from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slough, get_random_tenor, nuclear, freakout, london999
 from monologue import query_limit, set_limit, handle_counter
@@ -253,6 +254,25 @@ def get_corona(bot, update):
         bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
 
 
+def get_covid(bot, update):
+    text = update.message.text.split('/covid ')
+    user = update.message.from_user.first_name
+    l = len(text)
+    if l == 2:
+        country = text[1]
+        logger.info(f'{user} requested covid for {country}')
+        text = covid.detailed(country)
+    elif l > 2:
+        countries = text[1].split(',')
+        countries = [i.lower().replace(' ', '') for i in countries]
+        logger.info(f'{user} requested corona for {countries}')
+        text = covid.covid(countries)
+    else:
+        text = covid.covid()
+        logger.info(f'{user} requested covid')
+    if text:
+        bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
+
 def ping(bot, update):
     gif = get_random_giphy(keyword='pong')
     bot.send_document(chat_id=update.message.chat_id,
@@ -284,6 +304,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('dry', dry_score_message))
     updater.dispatcher.add_handler(CommandHandler('wet', wet_score_message))
     updater.dispatcher.add_handler(CommandHandler('corona', get_corona))
+    updater.dispatcher.add_handler(CommandHandler('covid', get_covid))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     word_watcher_regex = re.compile('.*(lula|informer|slough|vai ficar tudo bem|calma cara|999London).*', re.IGNORECASE)
     updater.dispatcher.add_handler(RegexHandler(word_watcher_regex, word_watcher))

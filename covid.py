@@ -11,6 +11,10 @@ def covid(countries=['italy', 'uk', 'france', 'spain', 'switzerland', 'usa', 'gr
     text = f'{world}'
     return text
 
+def total():
+    res = requests.get(f'{base_url}/all').json()
+
+
 
 def detailed(country):
     rows = list()
@@ -20,7 +24,7 @@ def detailed(country):
             continue
         rows.append([k,v])
     table = tabulate.tabulate(rows, tablefmt='psql')
-    return f'<pre>\nCOVID-19 situation in {country.upper()}\n{table}\n</pre>'
+    return f'<pre>\nCOVID-19 situation in {country.capitalize()}\n{table}\n</pre>'
 
 
 def summary(countries):
@@ -35,7 +39,3 @@ def summary(countries):
     table = tabulate.tabulate(rows, headers=['Pais', 'Case', 'New', '☠️'], tablefmt='simple', numalign='right')
     return f'<pre>\nCOVID-19 situation:\n{table}\n</pre>'
 
-
-
-cov = detailed('uk')
-print(cov)

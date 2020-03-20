@@ -22,6 +22,7 @@ from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_
 import corona
 import twitter
 import string
+import movies
 from urllib3.exceptions import ProtocolError
 
 
@@ -147,6 +148,7 @@ def emojify(country):
     return emoji
 
 
+
 def beer_search_menu(bot, update):
     if update.message.text.startswith('/beer'):
         search = update.message.text.split('/beer ')[1]
@@ -158,18 +160,65 @@ def beer_search_menu(bot, update):
     for b in beers:
         emoji = emojify(b['country'])
         buttons.append(InlineKeyboardButton(f'{emoji}  {b["name"]} by {b["brewery"]} - ({b["checkin_count"]}) checkins',
-                                            callback_data=b['bid']))
+                                            callback_data={'bid': b['bid'], 'caller': 'beer'}))
     reply_markup = InlineKeyboardMarkup(build_menu(buttons, n_cols=1))
     update.message.reply_text('Which one do you mean?', reply_markup=reply_markup,
                               remove_keyboard=True)
 
+
+def movie_search_menu(bot, update):
+    search = update.message.text.split('/movie ')[1]
+    movie = movies.search(search)
+    buttons = list()
+    for m in movie:
+        buttons.append(InlineKeyboardButton(f'{m.data.get("title")} - {m.data.get("year")}',
+                       callback_data=f'movie,{m.movieID}'))
+    reply_markup = InlineKeyboardMarkup(build_menu(buttons, n_cols=2))
+    update.message.reply_text('Which one do you mean?', reply_markup=reply_markup,
+                              remove_keyboard=True)
+
+def movie_info(bot, update):
+    query = update.callback_query
+    mid = query.message.message_id
+    cid = query.message.chat_id
+    bot.delete_message(chat_id=cid, message_id=mid)
+    movieid = query.data.split(',')[1]
+    print(movieid)
+    md = movies.movie(movieid)
+    directors = [i.data.get('name') for i in md.data.get('directors')]
+    cast = [i.data.get('name') for i in md.data.get('cast')[:4]]
+    countries = [i for i in md.data.get('countries')]
+    air_date = md.data.get('original air date')
+    rating = md.data.get('rating')
+    votes = md.data.get('votes')
+    cover = md.data.get('cover url')
+    plot = md.data.get('plot outline')
+    title = md.data.get('title')
+    year = md.data.get('year')
+    box_office = md.data.get('box office')
+    if box_office:
+        budget = box_office.get('Budget')
+        gross = box_office.get('Cumulative Worldwide Gross')
+    message = f'{cover}\n\n'
+    message += f'*{title} - {year} - {", ".join(countries)} *\n'
+    message += f'*Rating:* {rating}, *Votes:* {votes}\n'
+    message += f"*Directors:* {', '.join(directors)}\n"
+    message += f"*Cast:* {', '.join(cast)}\n"
+    if box_office:
+        message += f"*Budget:* {budget}, *Gross:* {gross},\n"
+    message += "*Plot:*\n\n"
+    message += f"{plot}\n\n"
+    logger.info(f'Sending {title}')
+    bot.send_message(chat_id=cid,
+                     text=message, parse_mode=telegram.ParseMode.MARKDOWN,
+                     timeout=150)
 
 def beer_info(bot, update):
     query = update.callback_query
     mid = query.message.message_id
     cid = query.message.chat_id
     bot.delete_message(chat_id=cid, message_id=mid)
-    bid = query.data
+    bid = query.data.get('bid')
     info = beer.get_untappd_beer(bid)
     emoji = emojify(info['country'])
     message = f'<a href="http://untappd.com/beer/{info["bid"]}"> {info["name"]}</a> by {info["brewery"]} {emoji}\n'
@@ -279,9 +328,9 @@ def ping(bot, update):
                       document=gif, timeout=100)
 
 
-def error(bot, update, error):
-    """Log Errors caused by Updates."""
-    logger.warning('Update "%s" caused error "%s"', update, error)
+# def error(bot, update, error):
+#     """Log Errors caused by Updates."""
+#     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
 def main():
@@ -305,14 +354,17 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('wet', wet_score_message))
     updater.dispatcher.add_handler(CommandHandler('corona', get_corona))
     updater.dispatcher.add_handler(CommandHandler('covid', get_covid))
+    updater.dispatcher.add_handler(CommandHandler('movie', movie_search_menu))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     word_watcher_regex = re.compile('.*(lula|informer|slough|vai ficar tudo bem|calma cara|999London).*', re.IGNORECASE)
     updater.dispatcher.add_handler(RegexHandler(word_watcher_regex, word_watcher))
     # apocalex = re.compile('.*(vai ficar tudo bem).*', re.IGNORECASE)
     # updater.dispatcher.add_handler(RegexHandler(apocalex, send_nuclear))
 
-    updater.dispatcher.add_handler(CallbackQueryHandler(beer_info))
-    updater.dispatcher.add_error_handler(error)
+    updater.dispatcher.add_handler(CallbackQueryHandler(beer_info, pattern='beer'))
+    updater.dispatcher.add_handler(CallbackQueryHandler(movie_info, pattern='^movie'))
+
+    # updater.dispatcher.add_error_handler(error)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))

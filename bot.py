@@ -191,15 +191,18 @@ def movie_info(bot, update):
     rating = md.data.get('rating')
     votes = md.data.get('votes')
     cover = md.data.get('cover url')
-    plot = md.data.get('plot outline')
+    plot = md.data.get('plot')[0]
+    # if len(plot) > 1:
+    #     plot = plot[1]
+    # else:
+    #     plot = plot[0]
     title = md.data.get('title')
     year = md.data.get('year')
     box_office = md.data.get('box office')
     if box_office:
         budget = box_office.get('Budget')
         gross = box_office.get('Cumulative Worldwide Gross')
-    message = f'{cover}\n\n'
-    message += f'*{title} - {year} - {", ".join(countries)} *\n'
+    message = f'*{title} - {year} - {", ".join(countries)} *\n'
     message += f'*Rating:* {rating}, *Votes:* {votes}\n'
     message += f"*Directors:* {', '.join(directors)}\n"
     message += f"*Cast:* {', '.join(cast)}\n"
@@ -207,6 +210,8 @@ def movie_info(bot, update):
         message += f"*Budget:* {budget}, *Gross:* {gross},\n"
     message += "*Plot:*\n\n"
     message += f"{plot}\n\n"
+    message += f'{cover}\n\n'
+
     logger.info(f'Sending {title}')
     bot.send_message(chat_id=cid,
                      text=message, parse_mode=telegram.ParseMode.MARKDOWN,

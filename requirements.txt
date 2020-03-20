@@ -9,3 +9,4 @@ emoji-country-flag
 tweepy
 beautifulsoup4
 tabulate
+imdbpy

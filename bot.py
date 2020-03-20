@@ -183,7 +183,6 @@ def movie_info(bot, update):
     cid = query.message.chat_id
     bot.delete_message(chat_id=cid, message_id=mid)
     movieid = query.data.split(',')[1]
-    print(movieid)
     md = movies.movie(movieid)
     directors = [i.data.get('name') for i in md.data.get('directors')]
     cast = [i.data.get('name') for i in md.data.get('cast')[:4]]

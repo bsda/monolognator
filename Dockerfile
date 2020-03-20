@@ -21,5 +21,6 @@ ADD twitter.py /app
 ADD corona.py /app
 ADD entry.sh /app
 ADD covid.py /app
+ADD movies.py /app
 RUN apk add openssl bash
 ENTRYPOINT [ "python3", "bot.py" ]

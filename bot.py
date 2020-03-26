@@ -160,7 +160,7 @@ def beer_search_menu(bot, update):
     for b in beers:
         emoji = emojify(b['country'])
         buttons.append(InlineKeyboardButton(f'{emoji}  {b["name"]} by {b["brewery"]} - ({b["checkin_count"]}) checkins',
-                                            callback_data={'bid': b['bid'], 'caller': 'beer'}))
+                                            callback_data=f'beer,{b["bid"]}'))
     reply_markup = InlineKeyboardMarkup(build_menu(buttons, n_cols=1))
     update.message.reply_text('Which one do you mean?', reply_markup=reply_markup,
                               remove_keyboard=True)
@@ -222,7 +222,7 @@ def beer_info(bot, update):
     mid = query.message.message_id
     cid = query.message.chat_id
     bot.delete_message(chat_id=cid, message_id=mid)
-    bid = query.data.get('bid')
+    bid = query.data.split(',')[1]
     info = beer.get_untappd_beer(bid)
     emoji = emojify(info['country'])
     message = f'<a href="http://untappd.com/beer/{info["bid"]}"> {info["name"]}</a> by {info["brewery"]} {emoji}\n'

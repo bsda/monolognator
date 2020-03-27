@@ -20,12 +20,12 @@ class Stream(tweepy.StreamListener):
         logger.info("Connected streaming API.")
 
     def on_limit(self, track):
-        logger.warn(f'Limit message received: {track}, Sleeping for 60 seconds')
+        logger.warning(f'Limit message received: {track}, Sleeping for 60 seconds')
         time.sleep(60)
 
     # TODO fix multiple ifs into single one
     def on_status(self, tweet):
-        logger.debug('On Status Triggered')
+        logger.debug(f'On Status Triggered: {tweet.user.screen_name}')
         if not tweet.retweeted:
             if 'RT @' not in tweet.text:
                 if not tweet.is_quote_status:

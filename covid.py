@@ -18,7 +18,10 @@ def total():
 
 def detailed(country):
     rows = list()
-    res = requests.get(f'{base_url}/countries/{country}').json()
+    try:
+        res = requests.get(f'{base_url}/countries/{country}').json()
+    except Exception as e:
+        return '{e}'
     for k, v in res.items():
         if k == 'country':
             continue

@@ -40,6 +40,7 @@ with open('filters.yml') as f:
     twitter_filters = yaml.load(f, Loader=yaml.FullLoader)['users']
 
 
+
 # Authenticate to Twitter
 def start_twitter_stream():
     auth = tweepy.OAuthHandler(cfg.get('twitter_api_key'),
@@ -67,50 +68,13 @@ def start_twitter_stream():
         start_twitter_stream()
 
 
-def filter_tweet(tweet):
-    # logger.info('Filtering tweets')
-    user_id = tweet.user.id
-    name = tweet.user.screen_name
-    text = tweet.text
-    logger.debug(f'Tweet from {user_id}, {name}')
-    if user_id in twitter_filters:
-        user = twitter_filters.get(tweet.user.id)
-        user_filter = user.get('filter')
-        filter_type = user.get('type')
-        text = text.lower()
-        new_text = re.sub(r'http\S+', '', text)
-        regex = re.compile('[%s]' % re.escape(string.punctuation))
-        new_text = regex.sub('', new_text).lower()
-        text_list = new_text.split()
-        logger.info(f'TWEET FROM {name}: {text}')
-        if user_filter:
-            if filter_type == 'string':
-                if any(word.lower() in text_list for word in user_filter):
-                    logger.info(f'Filter match for {name}, type:{filter_type}')
-                    logger.info(f'Word: {text_list}')
-                    return f'https://twitter.com/{name}/status/{tweet.id}'
-                else:
-                    return None
-            if filter_type == 'regex':
-                rex = re.compile(user_filter)
-                if rex.findall(text, re.IGNORECASE):
-                    logger.info(f'Filter match for {name}, type:{filter_type}')
-                    logger.info(f'Word: {text_list}')
-                    return f'https://twitter.com/{name}/status/{tweet.id}'
-                else:
-                    return None
-        logger.info(f'User match for {name}, empty filter')
-        return f'https://twitter.com/{name}/status/{tweet.id}'
-    # logger.info(f'Dropping tweet from {name}, {user_id}, {text}, ')
-    return None
-
-
 def send_tweets(bot, update):
     logger.info('Checking queue')
     q = twitter.tqueue
+    logger.info(f'Queue sized when reading: {q.qsize()}')
     while not q.empty():
         tweet = q.get()
-        url = filter_tweet(tweet)
+        url = f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}'
         if url:
             logger.info(f'Sending tweet from {tweet.user.screen_name}')
             bot.send_message(chat_id=group_id, text=url)
@@ -332,9 +296,9 @@ def ping(bot, update):
                       document=gif, timeout=100)
 
 
-# def error(bot, update, error):
-#     """Log Errors caused by Updates."""
-#     logger.warning('Update "%s" caused error "%s"', update, error)
+def error(bot, update, error):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, error)
 
 
 def main():
@@ -368,7 +332,7 @@ def main():
     updater.dispatcher.add_handler(CallbackQueryHandler(beer_info, pattern='beer'))
     updater.dispatcher.add_handler(CallbackQueryHandler(movie_info, pattern='^movie'))
 
-    # updater.dispatcher.add_error_handler(error)
+    updater.dispatcher.add_error_handler(error)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))

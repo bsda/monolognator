@@ -34,6 +34,19 @@ users:
       - cus
       - viado
       - puta
+  5402612:
+    name: BBCBreaking
+    type: string
+    filter:
+      - coronavirus
+      - covid
+      - covid-19
+      - sars
+      - quarantine
+      - positive
+      - virus
+      - death
+      - nhs
 
 
 

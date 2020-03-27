@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: twitter-filters
+  namespace: default
+data:
+  filters.yml: |+
+    users:
+      78597550:
+        name: eu
+        type: string
+        filter:
+          - derp
+      4621392093:
+        name: 999London
+        type: string
+        filter:
+          - SW16
+          - SW17
+          - SW19
+          - SW20
+          - SW2
+          - Croydon
+          - Wandsworth
+          - Hackney
+          - Croydon
+          - Tooting
+          - Heathrow
+          - Gatwick
+          - Stanstead
+          - Battersea
+          - CrystalPalace
+          - Putney
+          - Clapham
+          - FinsburyPark
+          - Merton
+          - Wimbledon
+          - Streatham
+          - SW
+          - SE
+          - E1
+          - E5
+      2892290499:
+        name: Olavo
+        type: string
+        filter:
+          - cu
+          - cus
+          - viado
+          - puta
+      37963496:
+        name: DHSCgovuk
+        type: string
+        filter:
+          - COVID19
+      5402612:
+        name: BBCBreaking
+        type: string
+        filter:
+          - coronavirus
+          - covid
+          - covid-19
+          - sars
+          - quarantine
+          - positive
+          - virus
+          - death
+          - nhs
+
+
+
+

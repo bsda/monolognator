@@ -64,7 +64,10 @@ def corona_world(countries):
 
     countries.append('total:')
     url = 'https://www.worldometers.info/coronavirus/'
-    r = requests.get(url)
+    try:
+        r = requests.get(url)
+    except requests.exceptions.RequestException as e:
+        return e
     soup = BeautifulSoup(r.text, features='html.parser')
     table = soup.table
     table_rows = table.find_all('tr')

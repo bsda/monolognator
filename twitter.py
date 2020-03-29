@@ -63,6 +63,8 @@ def filter_tweet(tweet):
         new_text = regex.sub('', new_text).lower()
         text_list = new_text.split()
         if user_filter:
+            logger.info(f'Tweet from: {name}')
+            logger.info(f'Filter: {user_filter}, Words: {text_list}')
             if filter_type == 'string':
                 if any(word.lower() in text_list for word in user_filter):
                     logger.info(f'Filter match for {name}, type:{filter_type}')

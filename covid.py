@@ -42,6 +42,6 @@ def summary(countries):
                 i['country'] = 'Suisse'
             row = [i.get('country'), i.get('cases'), i.get('todayCases'), i.get('deaths')]
             rows.append(row)
-    table = tabulate.tabulate(rows, headers=['Pais', 'Case', 'New', '☠️'], tablefmt='psql', numalign='right')
+    table = tabulate.tabulate(rows, headers=['Pais', 'Case', 'New', '☠️'], tablefmt='simple', numalign='right')
     return f'<pre>\nCOVID-19 situation:\n{table}\n</pre>'
 

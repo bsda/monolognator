@@ -8,23 +8,17 @@ import datetime
 import beer
 import re
 import random
-import flag
-import pycountry
 import config
-import tweepy
 import yaml
-import json
 import covid
 from operator import itemgetter
-from gif import get_random_giphy, search_tenor, inlinequery, informer, lula, slough, get_random_tenor, nuclear, freakout, london999
+from gif import get_random_giphy, inlinequery
 from monologue import query_limit, set_limit, handle_counter
-from weather import get_weather, chance_of_rain_today, chuva, chuva2, scheduled_weather, send_weather
+from twitter import start_twitter_stream, tqueue
+from utils import build_menu, emojify
+from weather import chuva, chuva2, scheduled_weather, send_weather
 import corona
-import twitter
-import string
 import movies
-from urllib3.exceptions import ProtocolError
-
 
 cfg = config.cfg()
 
@@ -42,35 +36,11 @@ with open('filters.yml') as f:
 
 
 # Authenticate to Twitter
-def start_twitter_stream():
-    auth = tweepy.OAuthHandler(cfg.get('twitter_api_key'),
-                               cfg.get('twitter_api_secret'))
-    auth.set_access_token(cfg.get('twitter_token'),
-                          cfg.get('twitter_token_secret'))
-
-    api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
-    tweets_listener = twitter.Stream(api)
-    stream = tweepy.Stream(api.auth, tweets_listener)
-    try:
-        logger.info('Starting Stream filter')
-        stream.filter(follow=[str(a) for a in twitter_filters.keys()], is_async=True)
-    except tweepy.TweepError as e:
-        stream.disconnect()
-        logger.error(f"TweepyError exception: {e}")
-        start_twitter_stream()
-    except (ProtocolError, AttributeError) as e:
-        stream.disconnect()
-        logger.error(f"TweepyError exception: {e}")
-        start_twitter_stream()
-    except Exception:
-        stream.disconnect()
-        logger.error("Fatal exception. Consult logs.")
-        start_twitter_stream()
 
 
 def send_tweets(bot, update):
     logger.info('Checking queue')
-    q = twitter.tqueue
+    q = tqueue
     logger.info(f'Queue sized when reading: {q.qsize()}')
     while not q.empty():
         tweet = q.get()
@@ -83,34 +53,6 @@ def send_tweets(bot, update):
 def start(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text="I'm The MonologNator. I'll be back")
-
-
-def build_menu(buttons,
-               n_cols,
-               header_buttons=None,
-               footer_buttons=None):
-    menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
-    if header_buttons:
-        menu.insert(0, [header_buttons])
-    if footer_buttons:
-        menu.append([footer_buttons])
-    return menu
-
-
-def emojify(country):
-    if country == 'England':
-        return '🏴󠁧󠁢󠁥󠁮󠁧󠁿󠁧󠁢󠁳󠁣󠁴󠁿'
-    if country == 'Scotland':
-        return '🏴󠁧󠁢󠁳󠁣󠁴󠁿'
-    if country == 'Russia':
-        country = 'Russian Federation'
-    try:
-        alpha_2 = pycountry.countries.get(name=country).alpha_2
-        emoji = flag.flagize(f':{alpha_2}:')
-    except Exception:
-        return '🏴‍☠️'
-    return emoji
-
 
 
 def beer_search_menu(bot, update):
@@ -290,6 +232,15 @@ def get_covid(bot, update):
     if text:
         bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
 
+
+def get_covidbr(bot, update):
+    user = update.message.from_user.first_name
+    text = covid.br()
+    logger.info(f'{user} requested covid BR')
+    if text:
+        bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
+
+
 def ping(bot, update):
     gif = get_random_giphy(keyword='pong')
     bot.send_document(chat_id=update.message.chat_id,
@@ -322,6 +273,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('wet', wet_score_message))
     updater.dispatcher.add_handler(CommandHandler('corona', get_corona))
     updater.dispatcher.add_handler(CommandHandler('covid', get_covid))
+    updater.dispatcher.add_handler(CommandHandler('covidbr', get_covidbr))
     updater.dispatcher.add_handler(CommandHandler('movie', movie_search_menu))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     word_watcher_regex = re.compile('.*(lula|informer|slough|vai ficar tudo bem|calma cara|999London).*', re.IGNORECASE)
@@ -332,7 +284,7 @@ def main():
     updater.dispatcher.add_handler(CallbackQueryHandler(beer_info, pattern='beer'))
     updater.dispatcher.add_handler(CallbackQueryHandler(movie_info, pattern='^movie'))
 
-    updater.dispatcher.add_error_handler(error)
+    # updater.dispatcher.add_error_handler(error)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))

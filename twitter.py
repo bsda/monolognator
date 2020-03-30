@@ -6,13 +6,20 @@ import time
 import yaml
 import re
 import string
+import config
+
+
+from urllib3.exceptions import ProtocolError
+
 
 logger = logging.getLogger(__name__)
+cfg = config.cfg()
 
 
 tqueue = queue.Queue()
 with open('filters.yml') as f:
     twitter_filters = yaml.load(f, Loader=yaml.FullLoader)['users']
+
 
 class Stream(tweepy.StreamListener):
     def __init__(self, api):
@@ -87,3 +94,29 @@ def filter_tweet(tweet):
         return True
     # logger.info(f'Dropping tweet from {name}, {user_id}, {text}, ')
     return False
+
+
+def start_twitter_stream():
+    auth = tweepy.OAuthHandler(cfg.get('twitter_api_key'),
+                               cfg.get('twitter_api_secret'))
+    auth.set_access_token(cfg.get('twitter_token'),
+                          cfg.get('twitter_token_secret'))
+
+    api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+    tweets_listener = Stream(api)
+    stream = tweepy.Stream(api.auth, tweets_listener)
+    try:
+        logger.info('Starting Stream filter')
+        stream.filter(follow=[str(a) for a in twitter_filters.keys()], is_async=True)
+    except tweepy.TweepError as e:
+        stream.disconnect()
+        logger.error(f"TweepyError exception: {e}")
+        start_twitter_stream()
+    except (ProtocolError, AttributeError) as e:
+        stream.disconnect()
+        logger.error(f"TweepyError exception: {e}")
+        start_twitter_stream()
+    except Exception:
+        stream.disconnect()
+        logger.error("Fatal exception. Consult logs.")
+        start_twitter_stream()

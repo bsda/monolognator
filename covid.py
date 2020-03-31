@@ -46,9 +46,9 @@ def summary(countries):
             for k in i.keys():
                 if isinstance(i[k], int) and i[k] > 10000:
                     i[k] = human_format(i[k])
-            row = [i.get('country'), i.get('cases'), i.get('todayCases'), i.get('deaths'), i.get('todayDeaths'), i.get('critical')]
+            row = [i.get('country'), i.get('cases'), i.get('todayCases'), i.get('deaths'), i.get('todayDeaths')]
             rows.append(row)
-    table = tabulate.tabulate(rows, headers=['', 'Case', 'New', 'D️', 'ND','Crit'], tablefmt='simple', numalign='right', stralign='right')
+    table = tabulate.tabulate(rows, headers=['', 'Case', 'New', 'D️', 'ND'], tablefmt='simple', numalign='right', stralign='right')
     return f'<pre>\nCOVID-19 situation:\n{table}\n</pre>\nhttps://www.worldometers.info/coronavirus/#countries'
 
 

@@ -25,51 +25,32 @@ spec:
         - name: config
           configMap:
             name: config
+        - name: twitter-filters
+          configMap:
+            name: twitter-filters
       containers:
-      - image: registry.hub.docker.com/jambock/monolognator
+      - image: gcr.io/peppy-house-263912/monolognator 
+      # - image: registry.hub.docker.com/jambock/monolognator
         imagePullPolicy: Always
         name: monolognator
+        resources:
+          limits:
+            cpu: "100m"
         ports:
           - containerPort: 8080
             protocol: TCP
         volumeMounts:
-          - mountPath: /config
+          - mountPath: /app/config.json
+            subPath: config.json
             name: config
-        env:
-          - name: telegram_token
-            valueFrom:
-              secretKeyRef:
-                key: token
-                name: telegram-token
-          - name: giphy_token
-            valueFrom:
-              secretKeyRef:
-                key: token
-                name: giphy-token
-          - name: darksky_token
-            valueFrom:
-              secretKeyRef:
-                key: token
-                name: darksky-token
-          - name: tenor_token
-            valueFrom:
-              secretKeyRef:
-                key: token
-                name: tenor-token
-          - name: untappd_client_id
-            valueFrom:
-              secretKeyRef:
-                key: client-id
-                name: untappd
-          - name: untappd_client_secret
-            valueFrom:
-              secretKeyRef:
-                key: client-secret
-                name: untappd
-          - name: CN
-            value: monolognator.brunix.net
+          - mountPath: /app/filters.yml
+            subPath: filters.yml
+            name: twitter-filters
       - image: nginx
         name: nginx
+        resources:
+          limits:
+            cpu: "100m"
         ports:
           - containerPort: 80
             protocol: TCP

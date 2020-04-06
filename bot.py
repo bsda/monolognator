@@ -69,9 +69,6 @@ def main():
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
     word_watcher_regex = re.compile(f'.*{"|".join([i for i in gifs.keys()])}.*', re.IGNORECASE)
     updater.dispatcher.add_handler(RegexHandler(word_watcher_regex, word_watcher_gif))
-    # apocalex = re.compile('.*(vai ficar tudo bem).*', re.IGNORECASE)
-    # updater.dispatcher.add_handler(RegexHandler(apocalex, send_nuclear))
-
     updater.dispatcher.add_handler(CallbackQueryHandler(beer_info, pattern='beer'))
     updater.dispatcher.add_handler(CallbackQueryHandler(movie_info, pattern='^movie'))
 
@@ -80,7 +77,6 @@ def main():
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
     tweet_job = j.run_repeating(send_tweets, interval=60, first=20)
-    # corona_job = j.run_repeating(corona_update, interval=1200, first=20)
     if method == 'polling':
         updater.start_polling(clean=True)
     else:

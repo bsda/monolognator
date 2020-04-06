@@ -1,11 +1,17 @@
-import os
+import random
+import telegram
 import untappd
 import logging
 import datetime
 import pytz
 import config
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from operator import itemgetter
+from utils import emojify, build_menu
+
 logger = logging.getLogger(__name__)
 cfg = config.cfg()
+
 
 def get_untappd_beer(bid, homebrew=False):
     keys = ['bid', 'beer_name', 'beer_label', 'beer_abv', 'rating_score',
@@ -122,3 +128,70 @@ def get_dry_scores(users):
         scores.append(new_latest_checkin(u))
     return scores
 
+
+def beer_search_menu(bot, update):
+    if update.message.text.startswith('/beer'):
+        search = update.message.text.split('/beer ')[1]
+        beers = search_untappd(search)
+    elif update.message.text.startswith('/homebrew'):
+        search = update.message.text.split('/homebrew ')[1]
+        beers = search_untappd(search, homebrew=True)
+    buttons = list()
+    for b in beers:
+        emoji = emojify(b['country'])
+        buttons.append(InlineKeyboardButton(f'{emoji}  {b["name"]} by {b["brewery"]} - ({b["checkin_count"]}) checkins',
+                                            callback_data=f'beer,{b["bid"]}'))
+    reply_markup = InlineKeyboardMarkup(build_menu(buttons, n_cols=1))
+    update.message.reply_text('Which one do you mean?', reply_markup=reply_markup,
+                              remove_keyboard=True)
+
+
+def beer_info(bot, update):
+    query = update.callback_query
+    mid = query.message.message_id
+    cid = query.message.chat_id
+    bot.delete_message(chat_id=cid, message_id=mid)
+    bid = query.data.split(',')[1]
+    info = get_untappd_beer(bid)
+    emoji = emojify(info['country'])
+    message = f'<a href="http://untappd.com/beer/{info["bid"]}"> {info["name"]}</a> by {info["brewery"]} {emoji}\n'
+    message += f'<b>{info["style"]}, abv:</b> {info["abv"]}%\n'
+    message += f'<b>Rating:</b> {info["rating"]}\n'
+    if info['label']:
+        photo = info['label']
+    else:
+        try:
+            photo = random.choice(info['photos'])
+        except IndexError:
+            photo = 'https://untappd.akamaized.net/site/assets/images/temp/badge-beer-default.png'
+    bot.send_photo(chat_id=query.message.chat_id,
+                   caption=message,
+                   parse_mode=telegram.ParseMode.HTML,
+                   photo=photo)
+
+
+def dry_score_message(bot, update):
+    users = cfg.get('untappd-users')
+    score = get_dry_scores(users)
+    sorted_score = sorted(score, key=itemgetter('days'), reverse=True)
+    message = '*Current Dry Scores*:\n\n'
+    sorted_score[0]['brewery'] = f"{sorted_score[0]['brewery']} 🏆"
+    for s in sorted_score:
+        days_s = 'day' if s['days'] == 1 else 'days'
+        message += f" `{s['user']}`: *{s['days']}* - *{s['beer']}* by {s['brewery']}\n"
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=message, parse_mode=telegram.ParseMode.MARKDOWN,
+                     timeout=150)
+
+
+def wet_score_message(bot, update):
+    users = cfg.get('untappd-users')
+    wet_score = get_wet_scores(users)
+    sorted_score = sorted(wet_score, key=itemgetter('score'), reverse=True)
+    message = '*Last Week Wet Scores*:\n\n'
+    sorted_score[0]['user'] = f"{sorted_score[0]['user']} 🏆"
+    for s in sorted_score:
+        message += f" `{s['user']}`: *{s['score']}* check-ins\n"
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=message, parse_mode=telegram.ParseMode.MARKDOWN,
+                     timeout=150)

@@ -18,7 +18,7 @@ spec:
       volumes:
         - name: nginx-conf
           configMap:
-            name: nginx-conf # place ConfigMap `nginx-conf` on /etc/nginx
+            name: nginx-conf
             items:
               - key: nginx.conf
                 path: nginx.conf
@@ -28,9 +28,11 @@ spec:
         - name: twitter-filters
           configMap:
             name: twitter-filters
+        - name: gifs
+          configMap:
+            name: gifs
       containers:
       - image: gcr.io/peppy-house-263912/monolognator 
-      # - image: registry.hub.docker.com/jambock/monolognator
         imagePullPolicy: Always
         name: monolognator
         resources:
@@ -46,6 +48,9 @@ spec:
           - mountPath: /app/filters.yml
             subPath: filters.yml
             name: twitter-filters
+          - mountPath: /app/gifs.yml
+            subPath: gifs.yml
+            name: gifs
       - image: nginx
         name: nginx
         resources:

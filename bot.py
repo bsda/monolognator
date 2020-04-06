@@ -10,14 +10,14 @@ import re
 import random
 import config
 import yaml
-import covid
 from operator import itemgetter
+
 from gif import get_random_giphy, inlinequery
 from monologue import query_limit, set_limit, handle_counter
 from twitter import start_twitter_stream, send_tweets
 from utils import build_menu, emojify
 from weather import chuva, chuva2, scheduled_weather, send_weather
-import corona
+from corona import get_corona, get_covid, get_covidbr
 import movies
 
 cfg = config.cfg()
@@ -177,56 +177,6 @@ def word_watcher(bot, update):
         logger.info(f'word watcher: {m}')
         method = globals()[m]
         method(bot, update)
-
-
-def corona_update(bot, update):
-    text = corona.corona_uk()
-    if text:
-        bot.send_message(chat_id=group_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
-
-
-def get_corona(bot, update):
-    text = update.message.text.split('/corona ')
-    user = update.message.from_user.first_name
-    l = len(text)
-    if len(text) > 1:
-        countries = text[1].split(',')
-        countries = [i.lower().replace(' ', '') for i in countries]
-        logger.info(f'{user} requested corona for {countries}')
-        text = corona.corona(countries)
-    else:
-        text = corona.corona()
-        logger.info(f'{user} requested corona')
-    if text:
-        bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
-
-
-def get_covid(bot, update):
-    text = update.message.text.split('/covid ')
-    user = update.message.from_user.first_name
-    l = len(text)
-    if l == 2:
-        country = text[1]
-        logger.info(f'{user} requested covid for {country}')
-        text = covid.detailed(country)
-    elif l > 2:
-        countries = text[1].split(',')
-        countries = [i.lower().replace(' ', '') for i in countries]
-        logger.info(f'{user} requested corona for {countries}')
-        text = covid.covid(countries)
-    else:
-        text = covid.covid()
-        logger.info(f'{user} requested covid')
-    if text:
-        bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
-
-
-def get_covidbr(bot, update):
-    user = update.message.from_user.first_name
-    text = covid.br()
-    logger.info(f'{user} requested covid BR')
-    if text:
-        bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
 
 
 def ping(bot, update):

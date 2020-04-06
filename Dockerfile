@@ -20,7 +20,6 @@ ADD config.py /app
 ADD twitter.py /app
 ADD corona.py /app
 ADD entry.sh /app
-ADD covid.py /app
 ADD movies.py /app
 ADD utils.py /app
 RUN apk add openssl bash

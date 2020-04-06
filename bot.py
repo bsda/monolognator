@@ -1,8 +1,6 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler
 from telegram.ext import Filters, InlineQueryHandler, RegexHandler
 from telegram.ext import CallbackQueryHandler
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-import telegram
 import logging
 import datetime
 import re
@@ -12,11 +10,10 @@ import yaml
 from beer import beer_search_menu, beer_info, dry_score_message, wet_score_message
 from gif import get_random_giphy, inlinequery
 from monologue import query_limit, set_limit, handle_counter
+from movies import movie_search_menu, movie_info
 from twitter import start_twitter_stream, send_tweets
-from utils import build_menu
 from weather import chuva, chuva2, scheduled_weather, send_weather
 from corona import get_corona, get_covid, get_covidbr
-import movies
 
 cfg = config.cfg()
 
@@ -39,58 +36,6 @@ with open('filters.yml') as f:
 def start(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text="I'm The MonologNator. I'll be back")
-
-
-def movie_search_menu(bot, update):
-    search = update.message.text.split('/movie ')[1]
-    movie = movies.search(search)
-    buttons = list()
-    for m in movie:
-        buttons.append(InlineKeyboardButton(f'{m.data.get("title")} - {m.data.get("year")}',
-                       callback_data=f'movie,{m.movieID}'))
-    reply_markup = InlineKeyboardMarkup(build_menu(buttons, n_cols=2))
-    update.message.reply_text('Which one do you mean?', reply_markup=reply_markup,
-                              remove_keyboard=True)
-
-def movie_info(bot, update):
-    query = update.callback_query
-    mid = query.message.message_id
-    cid = query.message.chat_id
-    bot.delete_message(chat_id=cid, message_id=mid)
-    movieid = query.data.split(',')[1]
-    md = movies.movie(movieid)
-    directors = [i.data.get('name') for i in md.data.get('directors')]
-    cast = [i.data.get('name') for i in md.data.get('cast')[:4]]
-    countries = [i for i in md.data.get('countries')]
-    air_date = md.data.get('original air date')
-    rating = md.data.get('rating')
-    votes = md.data.get('votes')
-    cover = md.data.get('cover url')
-    plot = md.data.get('plot')[0]
-    # if len(plot) > 1:
-    #     plot = plot[1]
-    # else:
-    #     plot = plot[0]
-    title = md.data.get('title')
-    year = md.data.get('year')
-    box_office = md.data.get('box office')
-    if box_office:
-        budget = box_office.get('Budget')
-        gross = box_office.get('Cumulative Worldwide Gross')
-    message = f'*{title} - {year} - {", ".join(countries)} *\n'
-    message += f'*Rating:* {rating}, *Votes:* {votes}\n'
-    message += f"*Directors:* {', '.join(directors)}\n"
-    message += f"*Cast:* {', '.join(cast)}\n"
-    if box_office:
-        message += f"*Budget:* {budget}, *Gross:* {gross},\n"
-    message += "*Plot:*\n\n"
-    message += f"{plot}\n\n"
-    message += f'{cover}\n\n'
-
-    logger.info(f'Sending {title}')
-    bot.send_message(chat_id=cid,
-                     text=message, parse_mode=telegram.ParseMode.MARKDOWN,
-                     timeout=150)
 
 
 def word_watcher(bot, update):

@@ -1,0 +1,28 @@
+informer:
+  type: static
+  tenor_gif:
+    - 13141855
+lula:
+  type: static
+  tenor_gif:
+    - 5544629
+slough:
+  type: static
+  tenor_gif:
+    - 8193002
+london999:
+  type: static
+  tenor_gif:
+    - 4927885
+    - 16737844
+vai ficar tudo bem:
+  type: random
+  keyword: nuclear
+calma cara:
+  type: random
+  keyword: freak out
+
+
+
+
+

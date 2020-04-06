@@ -8,7 +8,7 @@ import config
 import yaml
 
 from beer import beer_search_menu, beer_info, dry_score_message, wet_score_message
-from gif import get_random_giphy, inlinequery
+from gif import get_random_giphy, inlinequery, word_watcher_gif
 from monologue import query_limit, set_limit, handle_counter
 from movies import movie_search_menu, movie_info
 from twitter import start_twitter_stream, send_tweets
@@ -16,7 +16,8 @@ from weather import chuva, chuva2, scheduled_weather, send_weather
 from corona import get_corona, get_covid, get_covidbr
 
 cfg = config.cfg()
-
+with open('gifs.yml') as f:
+    gifs = yaml.load(f, Loader=yaml.FullLoader)
 
 logger = logging.getLogger(__name__)
 
@@ -25,34 +26,10 @@ msg_limit = {}
 group_id = cfg.get('group_id')
 my_chat_id = cfg.get('my_chat_id')
 
-with open('filters.yml') as f:
-    twitter_filters = yaml.load(f, Loader=yaml.FullLoader)['users']
-
-
-
-# Authenticate to Twitter
-
 
 def start(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text="I'm The MonologNator. I'll be back")
-
-
-def word_watcher(bot, update):
-    regex = re.compile('(lula|informer|slough|vai ficar tudo bem|calma cara|999London)', re.IGNORECASE)
-    msg = update.message.text.lower()
-    logger.info(f'Start word watcher with {msg}')
-    a = regex.findall(msg)
-    for m in regex.findall(msg):
-        if m == 'vai ficar tudo bem':
-            m = 'nuclear'
-        elif m == 'calma cara':
-            m = 'freakout'
-        elif m == '999london':
-            m = 'london999'
-        logger.info(f'word watcher: {m}')
-        method = globals()[m]
-        method(bot, update)
 
 
 def ping(bot, update):
@@ -90,8 +67,8 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('covidbr', get_covidbr))
     updater.dispatcher.add_handler(CommandHandler('movie', movie_search_menu))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
-    word_watcher_regex = re.compile('.*(lula|informer|slough|vai ficar tudo bem|calma cara|999London).*', re.IGNORECASE)
-    updater.dispatcher.add_handler(RegexHandler(word_watcher_regex, word_watcher))
+    word_watcher_regex = re.compile(f'.*{"|".join([i for i in gifs.keys()])}.*', re.IGNORECASE)
+    updater.dispatcher.add_handler(RegexHandler(word_watcher_regex, word_watcher_gif))
     # apocalex = re.compile('.*(vai ficar tudo bem).*', re.IGNORECASE)
     # updater.dispatcher.add_handler(RegexHandler(apocalex, send_nuclear))
 

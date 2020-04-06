@@ -1,13 +1,17 @@
-
+import re
 import telegram
 import random
 import logging
-import os
+import yaml
 import requests
 import uuid
 import config
+
 logger = logging.getLogger(__name__)
 cfg = config.cfg()
+
+with open('gifs.yml') as f:
+    gifs = yaml.load(f, Loader=yaml.FullLoader)
 
 
 # INLINE QUERY (GIF SEARCH)
@@ -31,7 +35,6 @@ def inlinequery(bot, update):
     update.inline_query.answer(results, timeout=5000, next_offset=int(offset)+40)
 
 
-# GIPHY
 def search_giphy(keyword, offset=0):
     gifs = []
     giphy_token = cfg.get('giphy_token')
@@ -46,24 +49,15 @@ def search_giphy(keyword, offset=0):
 
 def get_random_giphy(keyword=None):
     giphy_token=cfg.get('giphy_token')
-    # offset = 0
-    # gifs = list()
     params = {'api_key': giphy_token, 'rating': 'r'}
     if keyword:
         params.update({'tag': keyword})
-    # for i in range(5):
-    #     gifs.extend(search_tenor(keyword, offset=offset))
-    #     offset+=40
-
-
     re = requests.get(f'https://api.giphy.com/v1/gifs/random', params=params)
     gif = re.json()['data']['images']['downsized_medium']['url']
     logger.info(f'Sending gif: {gif}')
-    # gif = random.choice(gifs)['url']
     return gif
 
 
-# TENOR
 def search_tenor(keyword, offset=0):
     gifs = []
     tenor_token = cfg.get('tenor_token')
@@ -81,7 +75,6 @@ def get_random_tenor(keyword):
     tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'media_filter': 'minimal',
               'q': keyword, 'limit': 50, 'pos': random.choice(range(50))}
-    # print(params)
     re = requests.get(f'https://api.tenor.com/v1/random', params=params)
     gif = random.choice(re.json()['results'])['media'][0]['mediumgif']['url']
     logger.info(gif)
@@ -94,6 +87,12 @@ def send_random_tenor(bot, update, keyword):
                       document=gif, timeout=100)
 
 
+def send_tenor(bot, update, gifid):
+    gif = get_tenor_gif(gifid)
+    bot.send_document(chat_id=update.message.chat_id,
+                      document=gif, timeout=100)
+
+
 def get_tenor_gif(gifid):
     tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'ids': gifid}
@@ -102,31 +101,15 @@ def get_tenor_gif(gifid):
     return gif
 
 
-def informer(bot, update):
-    gif = get_tenor_gif(13141855)
-    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=100)
+def word_watcher_gif(bot, update):
+    regex = re.compile('|'.join([i for i in gifs.keys()]), re.IGNORECASE)
+    msg = update.message.text.lower()
+    logger.info(f'Start word watcher with {msg}')
+    for m in regex.findall(msg):
+        if gifs.get(m).get('type') == 'random':
+            keyword = gifs.get(m).get('keyword')
+            send_random_tenor(bot, update, keyword)
+        else:
+            gifid = random.choice(gifs.get(m).get('tenor_gif'))
+            send_tenor(bot, update, gifid)
 
-
-def lula(bot, update):
-    gif = get_tenor_gif(5544629)
-    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=100)
-
-
-def slough(bot, update):
-    gif = get_tenor_gif(8193002)
-    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=100)
-
-
-def london999(bot, update):
-    gif = get_tenor_gif(4927885)
-    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=100)
-
-
-def nuclear(bot, update):
-    gif = get_random_tenor('nuclear explosion')
-    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=100)
-
-
-def freakout(bot, update):
-    gif = get_random_tenor('freak out')
-    bot.send_document(chat_id=update.message.chat_id, document=gif, timeout=100)

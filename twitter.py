@@ -1,5 +1,4 @@
 import tweepy
-import json
 import queue
 import logging
 import time
@@ -7,16 +6,14 @@ import yaml
 import re
 import string
 import config
-
-
-from urllib3.exceptions import ProtocolError
-
+from urllib3.exceptions import ProtocolError, IncompleteRead
 
 logger = logging.getLogger(__name__)
 cfg = config.cfg()
-
-
+group_id = cfg.get('group_id')
+my_chat_id = cfg.get('my_chat_id')
 tqueue = queue.Queue()
+
 with open('filters.yml') as f:
     twitter_filters = yaml.load(f, Loader=yaml.FullLoader)['users']
 
@@ -36,16 +33,18 @@ class Stream(tweepy.StreamListener):
 
     # TODO fix multiple ifs into single one
     def on_status(self, tweet):
-        # logger.debug(f'On Status Triggered: {tweet.user.screen_name}')
-        if not tweet.retweeted:
-            if 'RT @' not in tweet.text:
-                if not tweet.is_quote_status:
-                    if not tweet.in_reply_to_status_id:
-                        logger.debug(f'TWEET: {tweet.user.screen_name}, {tweet.retweeted}, {tweet.is_quote_status}, {tweet.in_reply_to_status_id}')
-                        logger.info(f'Adding tweet from {tweet.user.screen_name} to queue')
-                        if filter_tweet(tweet):
-                            tqueue.put(tweet)
-                        logger.info(f'Queue size: {tqueue.qsize()} ')
+        logger.debug(f'On Status Triggered: {tweet.user.screen_name}')
+        if tweet.user.id in twitter_filters:
+            logger.info(f'Tweet from {tweet.user.screen_name}.')
+            if not tweet.retweeted:
+                if 'RT @' not in tweet.text:
+                    if not tweet.is_quote_status:
+                        if not tweet.in_reply_to_status_id:
+                            logger.debug(f'TWEET: {tweet.user.screen_name}, {tweet.retweeted}, {tweet.is_quote_status}, {tweet.in_reply_to_status_id}')
+                            logger.info(f'Adding tweet from {tweet.user.screen_name} to queue')
+                            if filter_tweet(tweet):
+                                tqueue.put(tweet)
+                            logger.debug(f'Queue size: {tqueue.qsize()} ')
 
     def on_error(self, status):
         logger.error(f"Error detected {status}")
@@ -104,15 +103,15 @@ def start_twitter_stream():
 
     api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
     tweets_listener = Stream(api)
-    stream = tweepy.Stream(api.auth, tweets_listener)
     try:
         logger.info('Starting Stream filter')
+        stream = tweepy.Stream(api.auth, tweets_listener)
         stream.filter(follow=[str(a) for a in twitter_filters.keys()], is_async=True)
     except tweepy.TweepError as e:
         stream.disconnect()
         logger.error(f"TweepyError exception: {e}")
         start_twitter_stream()
-    except (ProtocolError, AttributeError) as e:
+    except (ProtocolError, AttributeError, IncompleteRead) as e:
         stream.disconnect()
         logger.error(f"TweepyError exception: {e}")
         start_twitter_stream()
@@ -120,3 +119,15 @@ def start_twitter_stream():
         stream.disconnect()
         logger.error("Fatal exception. Consult logs.")
         start_twitter_stream()
+
+
+def send_tweets(bot, update):
+    logger.debug('Checking queue')
+    logger.debug(f'Queue sized when reading: {tqueue.qsize()}')
+    while not tqueue.empty():
+        tweet = tqueue.get()
+        url = f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}'
+        if url:
+            logger.info(f'Sending tweet from {tweet.user.screen_name}')
+            bot.send_message(chat_id=group_id, text=url)
+

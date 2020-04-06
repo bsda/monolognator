@@ -14,7 +14,7 @@ import covid
 from operator import itemgetter
 from gif import get_random_giphy, inlinequery
 from monologue import query_limit, set_limit, handle_counter
-from twitter import start_twitter_stream, tqueue
+from twitter import start_twitter_stream, send_tweets
 from utils import build_menu, emojify
 from weather import chuva, chuva2, scheduled_weather, send_weather
 import corona
@@ -36,18 +36,6 @@ with open('filters.yml') as f:
 
 
 # Authenticate to Twitter
-
-
-def send_tweets(bot, update):
-    logger.info('Checking queue')
-    q = tqueue
-    logger.info(f'Queue sized when reading: {q.qsize()}')
-    while not q.empty():
-        tweet = q.get()
-        url = f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}'
-        if url:
-            logger.info(f'Sending tweet from {tweet.user.screen_name}')
-            bot.send_message(chat_id=group_id, text=url)
 
 
 def start(bot, update):

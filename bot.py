@@ -8,12 +8,14 @@ import config
 import yaml
 
 from beer import beer_search_menu, beer_info, dry_score_message, wet_score_message
-from gif import get_random_giphy, inlinequery, word_watcher_gif
+from gif import get_random_giphy, inlinequery, word_watcher_gif, word_watcher_regex
 from monologue import query_limit, set_limit, handle_counter
 from movies import movie_search_menu, movie_info
 from twitter import start_twitter_stream, send_tweets
 from weather import chuva, chuva2, scheduled_weather, send_weather
 from corona import get_corona, get_covid, get_covidbr
+from telegram.error import (TelegramError, Unauthorized, BadRequest,
+                            TimedOut, ChatMigrated, NetworkError)
 
 cfg = config.cfg()
 with open('gifs.yml') as f:
@@ -42,6 +44,29 @@ def error(bot, update, error):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, error)
 
+def error_callback(bot, update, error):
+    try:
+        raise error
+    except Unauthorized as e:
+        # remove update.message.chat_id from conversation list
+        logger.error('Update "%s" caused error "%s"', update, e)
+    except BadRequest as e:
+        # handle malformed requests - read more below!
+        logger.error('Update "%s" caused error "%s"', update, e)
+    except TimedOut as e:
+        # handle slow connection problems
+        logger.error('Update "%s" caused error "%s"', update, e)
+    except NetworkError as e:
+        # handle other connection problems
+        logger.error('Update "%s" caused error "%s"', update, e)
+    except ChatMigrated as e:
+        # the chat_id of a group has changed, use e.new_chat_id instead
+        logger.error('Update "%s" caused error "%s"', update, e)
+    except TelegramError as e:
+        # handle all other telegram related errors
+        logger.error('Update "%s" caused error "%s"', update, e)
+
+
 
 def main():
     logging.basicConfig(level=cfg.get('loglevel', 'INFO'),
@@ -67,12 +92,12 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('covidbr', get_covidbr))
     updater.dispatcher.add_handler(CommandHandler('movie', movie_search_menu))
     updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
-    word_watcher_regex = re.compile(f'.*{"|".join([i for i in gifs.keys()])}.*', re.IGNORECASE)
-    updater.dispatcher.add_handler(RegexHandler(word_watcher_regex, word_watcher_gif))
+    # word_watcher_regex = re.compile(f'.*{"|".join([i for i in gifs.keys()])}.*', re.IGNORECASE)
+    updater.dispatcher.add_handler(RegexHandler(word_watcher_regex(), word_watcher_gif))
     updater.dispatcher.add_handler(CallbackQueryHandler(beer_info, pattern='beer'))
     updater.dispatcher.add_handler(CallbackQueryHandler(movie_info, pattern='^movie'))
 
-    # updater.dispatcher.add_error_handler(error)
+    updater.dispatcher.add_error_handler(error_callback)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))

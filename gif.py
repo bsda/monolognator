@@ -75,41 +75,75 @@ def get_random_tenor(keyword):
     tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'media_filter': 'minimal',
               'q': keyword, 'limit': 50, 'pos': random.choice(range(50))}
-    re = requests.get(f'https://api.tenor.com/v1/random', params=params)
-    gif = random.choice(re.json()['results'])['media'][0]['mediumgif']['url']
-    logger.info(gif)
-    return gif
+    try:
+        re = requests.get(f'https://api.tenor.com/v1/random', params=params)
+        gif = random.choice(re.json()['results'])['media'][0]['mediumgif']['url']
+        logger.info(gif)
+        return gif
+    except requests.exceptions.RequestException as e:
+        logger.error(f'Failed to get tenor gif for {keyword}: {e}')
 
 
 def send_random_tenor(bot, update, keyword):
     gif = get_random_tenor(keyword)
     bot.send_document(chat_id=update.message.chat_id,
-                      document=gif, timeout=100)
+                         document=gif, timeout=5000)
 
 
 def send_tenor(bot, update, gifid):
     gif = get_tenor_gif(gifid)
+    logger.info(f'Sending gif: {gif}')
     bot.send_document(chat_id=update.message.chat_id,
-                      document=gif, timeout=100)
+                         document=gif, timeout=5000)
 
 
 def get_tenor_gif(gifid):
     tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'ids': gifid}
     re = requests.get(f'https://api.tenor.com/v1/gifs', params=params)
-    gif = re.json()['results'][0]['media'][0]['mediumgif']['url']
-    return gif
+    try:
+        gif = re.json()['results'][0]['media'][0]['mediumgif']['url']
+        return gif
+    except requests.exceptions.RequestException as e:
+        logger.error(f'Failed to get {gifid} on tenor: {e}')
+
+
+def word_watcher_regex():
+    keys = ([i for i in gifs.keys()])
+    alias_lists = [gifs[i].get('aliases') for i in gifs.keys() if gifs[i].get('aliases')]
+    aliases = ([i for sublist in alias_lists for i in sublist])
+    regex = re.compile('|'.join(keys + aliases), re.IGNORECASE)
+    return regex
+
+
+def get_gif_key(word):
+    reverse_gifs = dict()
+    for i in gifs.keys():
+        if gifs[i].get('aliases'):
+            if word in gifs[i].get('aliases'):
+                return i
+
 
 
 def word_watcher_gif(bot, update):
-    regex = re.compile('|'.join([i for i in gifs.keys()]), re.IGNORECASE)
+    regex = word_watcher_regex()
     msg = update.message.text.lower()
     logger.info(f'Start word watcher with {msg}')
     for m in regex.findall(msg):
-        if gifs.get(m).get('type') == 'random':
-            keyword = gifs.get(m).get('keyword')
-            send_random_tenor(bot, update, keyword)
+        # check if word if key
+        if m in gifs:
+            if gifs.get(m).get('type') == 'random':
+                keyword = gifs.get(m).get('keyword')
+                logger.info(f'Word Watcher: {m}')
+                send_random_tenor(bot, update, keyword)
+            else:
+                logger.info(f'Word Watcher: {m}')
+                gifid = random.choice(gifs.get(m).get('tenor_gif'))
+                send_tenor(bot, update, gifid)
         else:
-            gifid = random.choice(gifs.get(m).get('tenor_gif'))
+            key = get_gif_key(m)
+            logger.info(f'Word Watcher: {key}')
+            gifid = random.choice(gifs.get(key).get('tenor_gif'))
             send_tenor(bot, update, gifid)
+
 

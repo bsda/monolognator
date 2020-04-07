@@ -33,7 +33,9 @@ class Stream(tweepy.StreamListener):
 
     # TODO fix multiple ifs into single one
     def on_status(self, tweet):
-        logger.debug(f'On Status Triggered: {tweet.user.screen_name}')
+        # Log ping msgs every 5 minutes to check if it's working
+        if time.localtime().tm_min % 5 == 0:
+            logger.info(f'on_status Triggered: {tweet.user.screen_name}')
         if tweet.user.id in twitter_filters:
             logger.info(f'Tweet from {tweet.user.screen_name}.')
             if not tweet.retweeted:
@@ -57,9 +59,10 @@ def filter_tweet(tweet):
     user_id = tweet.user.id
     name = tweet.user.screen_name
     text = tweet.text
-    logger.info(f'Filtering Tweet from {name}: {text}')
+    logger.debug(f'Filtering Tweet from {name}: {text}')
     if user_id in twitter_filters:
-        logger.info(f'Tweet from {name} is in filters: {text} ')
+        logger.info(f'Tweet: https://twitter.com/{name}/status/{tweet.id}')
+        logger.debug(f'Tweet from {name} is in filters: {text} ')
         user = twitter_filters.get(tweet.user.id)
         user_filter = user.get('filter')
         filter_type = user.get('type')
@@ -69,15 +72,16 @@ def filter_tweet(tweet):
         new_text = regex.sub('', new_text).lower()
         text_list = new_text.split()
         if user_filter:
-            logger.info(f'Tweet from: {name}')
-            logger.info(f'Filter: {user_filter}, Words: {text_list}')
+            # logger.info(f'Tweet from: {name}')
+            # logger.info(f'Filter: {user_filter}, Words: {text_list}')
             if filter_type == 'string':
                 if any(word.lower() in text_list for word in user_filter):
-                    logger.info(f'Filter match for {name}, type:{filter_type}')
-                    logger.info(f'Word: {text_list}')
+                    logger.info(f'MATCH {name},filter: {user_filter}')
+                    logger.info(f'Words: {text_list}')
                     # return f'https://twitter.com/{name}/status/{tweet.id}'
                     return True
                 else:
+                    logger.info(f'NO MATCH. filter: {user_filter}, words: {text_list}')
                     return False
             if filter_type == 'regex':
                 rex = re.compile(user_filter)

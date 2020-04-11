@@ -10,6 +10,7 @@ import config
 logger = logging.getLogger(__name__)
 cfg = config.cfg()
 
+
 with open('gifs.yml') as f:
     gifs = yaml.load(f, Loader=yaml.FullLoader)
 
@@ -76,12 +77,14 @@ def get_random_tenor(keyword):
     params = {'key': tenor_token, 'media_filter': 'minimal',
               'q': keyword, 'limit': 50, 'pos': random.choice(range(50))}
     try:
-        res = requests.get(f'https://api.tenor.com/v1/random', params=params)
-        gif = random.choice(res.json()['results'])['media'][0]['mediumgif']['url']
+        res = requests.get(f'https://api.tenor.com/v1/random', params=params).json()['results']
+        gifs = [ i for i in res if i['media'][0]['mediumgif']['size'] <= 10000000]
+        gif = random.choice(gifs)['media'][0]['mediumgif']['url']
         logger.info(gif)
         return gif
     except requests.exceptions.RequestException as e:
         logger.error(f'Failed to get tenor gif for {keyword}: {e}')
+        return e
 
 
 def send_random_tenor(bot, update, keyword):
@@ -143,7 +146,12 @@ def word_watcher_gif(bot, update):
         else:
             key = get_gif_key(m)
             logger.info(f'Word Watcher: {key}')
-            gifid = random.choice(gifs.get(key).get('tenor_gif'))
-            send_tenor(bot, update, gifid)
+            if gifs[key]['type'] == 'static':
+                gifid = random.choice(gifs.get(key).get('tenor_gif'))
+                send_tenor(bot, update, gifid)
+            else:
+                send_random_tenor(bot, update, key)
+
+
 
 

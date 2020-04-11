@@ -51,3 +51,10 @@ data:
     "calma.*cara":
       type: random
       keyword: freak out
+    filho da puta:
+      type: random
+      keyword: filho da puta
+      aliases:
+        - filhos da puta
+        - fdp
+        - son of a bitch

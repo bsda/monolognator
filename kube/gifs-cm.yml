@@ -48,6 +48,6 @@ data:
     vai ficar tudo bem:
       type: random
       keyword: nuclear
-    calma cara:
+    "calma.*cara":
       type: random
       keyword: freak out

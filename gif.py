@@ -136,8 +136,8 @@ def word_watcher_gif(bot, update):
         # check if word is key
         if m in gifs:
             if gifs.get(m).get('type') == 'random':
-                keyword = gifs.get(m).get('keyword')
-                logger.info(f'Word Watcher: {m}')
+                keyword = random.choice(gifs.get(m).get('keywords'))
+                logger.info(f'Word Watcher: {keyword}')
                 send_random_tenor(bot, update, keyword)
             else:
                 logger.info(f'Word Watcher: {m}')
@@ -145,12 +145,13 @@ def word_watcher_gif(bot, update):
                 send_tenor(bot, update, gifid)
         else:
             key = get_gif_key(m)
-            logger.info(f'Word Watcher: {key}')
             if gifs[key]['type'] == 'static':
                 gifid = random.choice(gifs.get(key).get('tenor_gif'))
                 send_tenor(bot, update, gifid)
             else:
-                send_random_tenor(bot, update, key)
+                keyword = random.choice(gifs.get(key).get('keywords'))
+                logger.info(f'Word Watcher: {keyword}')
+                send_random_tenor(bot, update, keyword)
 
 
 

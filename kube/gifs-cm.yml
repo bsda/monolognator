@@ -47,16 +47,30 @@ data:
         - 16776069
     vai ficar tudo bem:
       type: random
-      keyword: nuclear
+      keywords:
+        - nuclear
+        - doomsday
     calma cara:
       type: random
-      keyword: freak out
+      keywords:
+        - freak out
+        - take it easy
+        - calm down
       aliases:
         - "calma.*cara"
     filho da puta:
       type: random
-      keyword: filho da puta
+      keywords:
+        - filho da puta
+        - son of a bitch
+        - mother fucker
       aliases:
         - filhos da puta
         - fdp
         - son of a bitch
+
+
+
+
+
+

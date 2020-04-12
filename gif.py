@@ -120,12 +120,12 @@ def word_watcher_regex():
 
 
 def get_gif_key(word):
-    reverse_gifs = dict()
+    logger.info(f'Getting gif key for {word}')
     for i in gifs.keys():
         if gifs[i].get('aliases'):
-            if word in gifs[i].get('aliases'):
+            aliasrex = re.compile('|'.join(gifs[i].get('aliases')), re.IGNORECASE)
+            if word in gifs[i].get('aliases') or re.search(aliasrex, word):
                 return i
-
 
 
 def word_watcher_gif(bot, update):

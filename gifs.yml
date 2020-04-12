@@ -44,6 +44,8 @@ vai ficar tudo bem:
 calma cara:
   type: random
   keyword: freak out
+  aliases:
+    - "calma.*cara"
 filho da puta:
   type: random
   keyword: filho da puta

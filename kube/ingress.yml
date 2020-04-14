@@ -6,7 +6,7 @@ metadata:
     kubernetes.io/ingress.global-static-ip-name: "kubernetes-ingress"
 spec:
   tls:
-    - secretName: certificate
+    - secretName: certificate-fullchain
   rules:
     - http:
         paths:

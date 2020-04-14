@@ -43,6 +43,8 @@ def ping(bot, update):
 def error(bot, update, error):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, error)
+    bot.send_message(chat_id=my_chat_id,
+                      text=error, timeout=100)
 
 def error_callback(bot, update, error):
     try:
@@ -97,7 +99,7 @@ def main():
     updater.dispatcher.add_handler(CallbackQueryHandler(beer_info, pattern='beer'))
     updater.dispatcher.add_handler(CallbackQueryHandler(movie_info, pattern='^movie'))
 
-    updater.dispatcher.add_error_handler(error_callback)
+    updater.dispatcher.add_error_handler(error)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))

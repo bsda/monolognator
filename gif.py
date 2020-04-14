@@ -115,7 +115,7 @@ def word_watcher_regex():
     keys = ([i for i in gifs.keys()])
     alias_lists = [gifs[i].get('aliases') for i in gifs.keys() if gifs[i].get('aliases')]
     aliases = ([i for sublist in alias_lists for i in sublist])
-    regex = re.compile('.*' + '|'.join(keys + aliases) + '.*', re.IGNORECASE)
+    regex = re.compile('|'.join(keys + aliases), re.IGNORECASE)
     return regex
 
 

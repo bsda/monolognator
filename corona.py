@@ -17,7 +17,7 @@ tabulate.MIN_PADDING = 0
 covid_api = 'https://coronavirus-19-api.herokuapp.com'
 
 
-def get_corona(bot, update):
+def get_corona(update, context):
     text = update.message.text.split('/corona ')
     user = update.message.from_user.first_name
     if len(text) > 1:
@@ -29,7 +29,7 @@ def get_corona(bot, update):
         text = corona()
         logger.info(f'{user} requested corona')
     if text:
-        bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
+        context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
 
 
 def corona(countries=None):
@@ -66,7 +66,7 @@ def corona(countries=None):
     return text
 
 
-def get_covid(bot, update):
+def get_covid(update, context):
     text = update.message.text.split('/covid ')
     user = update.message.from_user.first_name
 
@@ -85,7 +85,7 @@ def get_covid(bot, update):
         text = covid()
         logger.info(f'{user} requested covid')
     if text:
-        bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
+        context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
 
 
 def covid(countries=None):
@@ -124,12 +124,12 @@ def detailed_covid(country):
     return f'<pre>\nCOVID-19 situation in {country.capitalize()}\n{table}\n</pre>'
 
 
-def get_covidbr(bot, update):
+def get_covidbr(update, context):
     user = update.message.from_user.first_name
     text = covid_br()
     logger.info(f'{user} requested covid BR')
     if text:
-        bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
+        context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.HTML)
 
 
 def covid_br():

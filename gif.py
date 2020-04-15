@@ -2,33 +2,25 @@ import re
 import telegram
 import random
 import logging
-import yaml
 import requests
 import uuid
 import config
-from updater import get_updater
 from google.cloud import firestore
-from telegram.ext import Updater, CommandHandler, MessageHandler
-from telegram.ext import Filters, InlineQueryHandler, RegexHandler
-from telegram.ext import CallbackQueryHandler
+from telegram.ext import Dispatcher
+from telegram.ext import Filters
 
 
 logger = logging.getLogger(__name__)
 cfg = config.cfg()
 
-
-# with open('gifs.yml') as f:
-#     gifs = yaml.load(f, Loader=yaml.FullLoader)
-
-# def get_updater():
-#     token = cfg.get('telegram_token')
-#     updater = Updater(token, request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
-#     return updater
-
-def get_gif_filters():
+def get_db():
     db = firestore.Client.from_service_account_json(json_credentials_path='./sa.json', project='peppy-house-263912')
     doc_ref = db.collection('gifs').document('filters')
-    # doc_ref.set(gifs)
+    return doc_ref
+
+
+def get_gif_filters():
+    doc_ref = get_db()
     doc = doc_ref.get()
     return doc.to_dict()
 
@@ -42,41 +34,38 @@ def list_aliases(keyword):
     return ', '.join(aliases)
 
 
-def get_aliases(bot, update):
+def get_aliases(update, context):
     word = update.message.text.split('/list_alias ')[1]
     aliases = list_aliases(word).replace("*", "\\*")
     text = f'Aliases for *{word}*: {aliases}'
-    bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
+    context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def update_aliases(keyword, alias):
-    db = firestore.Client.from_service_account_json(json_credentials_path='./sa.json', project='peppy-house-263912')
-    doc_ref = db.collection('gifs').document('filters')
+    doc_ref = get_db()
     key = get_gif_key(keyword)
     gif_filters[key]['aliases'].append(alias)
     gif_filters[key]['aliases'] = list(set(gif_filters[key]['aliases']))
     doc_ref.set(gif_filters)
     filters = get_gif_filters()
     aliases = filters[key].get('aliases')
-    updater = get_updater()
-    print(word_watcher_regex())
-    updater.dispatcher.remove_handler(RegexHandler)
-    updater.dispatcher.add_handler(RegexHandler(word_watcher_regex(), word_watcher_gif))
+    dp = Dispatcher.get_instance()
+    dp.handlers[0][19].filters = Filters.regex(filters)
     return aliases
 
 
-def add_alias(bot, update):
+def add_alias(update, context):
     command = update.message.text.split('/add_alias ')[1]
     keyword, alias = command.split('=')
     aliases = ', '.join(update_aliases(keyword, alias)).replace("*", "\\*")
     text = f'Filter updated, *{alias}* added to {keyword}\n'
     text += f'*New filter*:\n{aliases}'
-    bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
+    context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 
 # INLINE QUERY (GIF SEARCH)
-def inlinequery(bot, update):
+def inlinequery(update, context):
     """Handle the inline query."""
     query = update.inline_query.query
     logger.info(query)
@@ -147,16 +136,16 @@ def get_random_tenor(keyword):
         return e
 
 
-def send_random_tenor(bot, update, keyword):
+def send_random_tenor(update, context, keyword):
     gif = get_random_tenor(keyword)
-    bot.send_document(chat_id=update.message.chat_id,
+    context.bot.send_document(chat_id=update.message.chat_id,
                          document=gif, timeout=5000)
 
 
-def send_tenor(bot, update, gifid):
+def send_tenor(update, context, gifid):
     gif = get_tenor_gif(gifid)
     logger.info(f'Sending gif: {gif}')
-    bot.send_document(chat_id=update.message.chat_id,
+    context.bot.send_document(chat_id=update.message.chat_id,
                          document=gif, timeout=5000)
 
 
@@ -172,7 +161,7 @@ def get_tenor_gif(gifid):
 
 
 def word_watcher_regex():
-    gif_filters = get_gif_filters()
+    # gif_filters = get_gif_filters()
     keys = ([i for i in gif_filters.keys()])
     alias_lists = [gif_filters[i].get('aliases') for i in gif_filters.keys() if gif_filters[i].get('aliases')]
     aliases = ([i for sublist in alias_lists for i in sublist])
@@ -181,7 +170,7 @@ def word_watcher_regex():
 
 
 def get_gif_key(word):
-    gif_filters = get_gif_filters()
+    # gif_filters = get_gif_filters()
     logger.info(f'Getting gif key for {word}')
     for i in gif_filters.keys():
         if gif_filters[i].get('aliases'):
@@ -190,8 +179,8 @@ def get_gif_key(word):
                 return i
 
 
-def word_watcher_gif(bot, update):
-    gif_filters = get_gif_filters()
+def word_watcher_gif(update, context):
+    # gif_filters = get_gif_filters()
     regex = word_watcher_regex()
     msg = update.message.text.lower()
     logger.info(f'Start word watcher with {msg}')
@@ -201,20 +190,20 @@ def word_watcher_gif(bot, update):
             if gif_filters.get(m).get('type') == 'random':
                 keyword = random.choice(gif_filters.get(m).get('keywords'))
                 logger.info(f'Word Watcher: {keyword}')
-                send_random_tenor(bot, update, keyword)
+                send_random_tenor(update, context, keyword)
             else:
                 logger.info(f'Word Watcher: {m}')
                 gifid = random.choice(gif_filters.get(m).get('tenor_gif'))
-                send_tenor(bot, update, gifid)
+                send_tenor(update, context, gifid)
         else:
             key = get_gif_key(m)
             if gif_filters[key]['type'] == 'static':
                 gifid = random.choice(gif_filters.get(key).get('tenor_gif'))
-                send_tenor(bot, update, gifid)
+                send_tenor(update, context, gifid)
             else:
                 keyword = random.choice(gif_filters.get(key).get('keywords'))
                 logger.info(f'Word Watcher: {keyword}')
-                send_random_tenor(bot, update, keyword)
+                send_random_tenor(update, context, keyword)
 
 
 

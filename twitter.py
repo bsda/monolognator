@@ -125,7 +125,7 @@ def start_twitter_stream():
         start_twitter_stream()
 
 
-def send_tweets(bot, update):
+def send_tweets(context):
     logger.debug('Checking queue')
     logger.debug(f'Queue sized when reading: {tqueue.qsize()}')
     while not tqueue.empty():
@@ -133,5 +133,5 @@ def send_tweets(bot, update):
         url = f'https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}'
         if url:
             logger.info(f'Sending tweet from {tweet.user.screen_name}')
-            bot.send_message(chat_id=group_id, text=url)
+            context.bot.send_message(chat_id=group_id, text=url)
 

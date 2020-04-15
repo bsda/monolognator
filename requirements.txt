@@ -11,3 +11,4 @@ tweepy
 beautifulsoup4
 tabulate
 imdbpy
+google-cloud-firestore

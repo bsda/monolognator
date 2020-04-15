@@ -6,8 +6,7 @@ import re
 from time import sleep
 from telegram.error import *
 
-from gif import send_random_tenor
-
+import gif
 logger = logging.getLogger(__name__)
 
 
@@ -16,7 +15,7 @@ msg_limit = {}
 my_chat_id = 113426151
 
 
-def query_limit(bot, update):
+def query_limit(update, context):
     user = update.message.from_user.id
     chat = update.message.chat_id
     if update.message.chat_id not in msg_limit:
@@ -32,14 +31,14 @@ def query_limit(bot, update):
 def random_limit(update):
     global msg_limit
     msg_limit[update.message.chat_id] = random.randint(8, 12)
-    # bot.send_message(chat_id=my_chat_id,
+    # context.bot.send_message(chat_id=my_chat_id,
     #                  text=f'New random limit set on {update.message.chat.title}: {msg_limit[update.message.chat_id]}')
     logger.info(f'Random limit of {msg_limit[update.message.chat_id]} set on {update.message.chat.title}')
     logger.info('================================================')
     return msg_limit[update.message.chat_id]
 
 
-def set_limit(bot, update):
+def set_limit(update, context):
     logger.debug(update.message.text)
     global msg_limit
     msg = update.message.text
@@ -50,7 +49,7 @@ def set_limit(bot, update):
         logger.info(f'New Limit set by {update.message.from_user.first_name}'
                     f' on {update.message.chat.title}: {msg_limit[update.message.chat_id]}')
         logger.info('================================================')
-        # bot.send_message(chat_id=my_chat_id,
+        # context.bot.send_message(chat_id=my_chat_id,
         #                  text=f'Manual limit set on {update.message.chat.title}'
         #                       f' by {update.message.from_user.first_name}: {msg_limit[update.message.chat_id]}')
 
@@ -59,7 +58,7 @@ def set_limit(bot, update):
 def delete_messages(bot, user, chat):
     # Delete messages from group
     for m in set(counter[chat][user]['msg_ids']):
-        bot.delete_message(chat_id=chat, message_id=m)
+        context.bot.delete_message(chat_id=chat, message_id=m)
 
 
 def add_count(chat, user, update):
@@ -113,14 +112,14 @@ def hit_limit(chat, user, update):
     return False
 
 
-def monolognate(chat, user, bot, update):
+def monolognate(chat, user, update, context):
     logger.info(f'Monologue by {update.message.from_user.first_name}')
     monologue = '\n'.join(counter[chat][user]['msgs'])
     delete_messages(bot, user, chat)
-    send_random_tenor(bot, update, 'tsunami')
+    gif.send_random_tenor(update, context, 'tsunami')
 
     try:
-        bot.send_message(chat_id=update.message.chat_id,
+        context.bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
                              monologue),
@@ -128,7 +127,7 @@ def monolognate(chat, user, bot, update):
                          timeout=15)
     except BadRequest as e:
         logger.info(f'BadRequest: {e}')
-        bot.send_message(chat_id=update.message.chat_id,
+        context.bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
                              monologue),
@@ -137,7 +136,7 @@ def monolognate(chat, user, bot, update):
     except RetryAfter as e:
         logger.info(f'RetryAfter: {e.retry_after}')
         sleep(int(e.retry_after))
-        bot.send_message(chat_id=update.message.chat_id,
+        context.bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
                              monologue),
@@ -146,7 +145,7 @@ def monolognate(chat, user, bot, update):
     except TimedOut as e:
         logger.info(f'TimedOut: {e}')
         sleep(1)
-        bot.send_message(chat_id=update.message.chat_id,
+        context.bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
                              monologue),
@@ -155,7 +154,7 @@ def monolognate(chat, user, bot, update):
     except Unauthorized as e:
         logger.info(f'Unauthorized: {e}')
         sleep(0.25)
-        bot.send_message(chat_id=update.message.chat_id,
+        context.bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
                              monologue),
@@ -164,7 +163,7 @@ def monolognate(chat, user, bot, update):
     except NetworkError as e:
         logger.info(f'NetworkError: {e}')
         sleep(1)
-        bot.send_message(chat_id=update.message.chat_id,
+        context.bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
                              monologue),
@@ -173,7 +172,7 @@ def monolognate(chat, user, bot, update):
     except Exception as e:
         logger.info(f'Some Shit happened: {e}')
         sleep(1)
-        bot.send_message(chat_id=update.message.chat_id,
+        context.bot.send_message(chat_id=update.message.chat_id,
                          text='*Monologue by {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
                              monologue),
@@ -184,7 +183,7 @@ def monolognate(chat, user, bot, update):
         reset_count(chat, user, update)
 
 
-def handle_counter(bot, update):
+def handle_counter(update, context):
     user = update.message.from_user.id
     chat = update.message.chat_id
     message = update.message
@@ -203,7 +202,7 @@ def handle_counter(bot, update):
                         f' on {update.message.chat.title}: {get_count(chat, user)}')
             # Check if user hit  chat limit. If it did, monolognate it
             if hit_limit(chat, user, update):
-                monolognate(chat, user, bot, update)
+                monolognate(chat, user, update, context)
                 reset_count(chat, user, update)
         else:
             reset_count(chat, user, update)

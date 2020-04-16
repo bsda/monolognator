@@ -54,6 +54,17 @@ spec:
           - mountPath: /app/gifs.yml
             subPath: gifs.yml
             name: gifs
+          - mountPath: /opt/secrets
+            name: service-account
+            readOnly: true
+          volumes:
+            - name: service-account
+              secret:
+                defaultMode: 420
+                items:
+                  - key: sa.json
+                    path: sa.jaon
+                secretName: service-account
       - image: nginx
         name: nginx
         resources:

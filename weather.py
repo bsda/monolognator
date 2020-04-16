@@ -6,7 +6,7 @@ import requests
 import time
 import datetime
 from geopy import Nominatim
-from gif import get_random_giphy, search_tenor, inlinequery
+import gif 
 import config
 logger = logging.getLogger(__name__)
 cfg = config.cfg()
@@ -89,11 +89,11 @@ def chuva(bot, update, chat_id=None):
     chove, time_of_rain, chance_of_rain = vai_chover(location)
     logger.info(f'Chove? {chove}')
     if chove == 'Vai chover':
-        gif = get_random_giphy(keyword='sad')
+        img = gif.gif.get_random_giphy(keyword='sad')
     else:
-        gif = get_random_giphy(keyword='happy')
+        img = gif.get_random_giphy(keyword='happy')
     bot.send_document(chat_id=chat_id,
-                      document=gif, caption=f'Bom dia, *{chove}* em {location} hoje '
+                      document=img, caption=f'Bom dia, *{chove}* em {location} hoje '
                                             f'*({chance_of_rain}% at {time_of_rain})*.'
                                             f'\nMax Temp: *{max_temp}*C', timeout=5000,
 
@@ -101,7 +101,7 @@ def chuva(bot, update, chat_id=None):
     # Send alert if there is one
     if 'alerts' in results.keys():
         bot.send_document(chat_id=chat_id,
-                          document=get_random_giphy('extreme weather'),
+                          document=gif.get_random_giphy('extreme weather'),
                           caption=f'*Incoming Weather Alert for {location}*',
                           timeout=5000,
                           parse_mode=telegram.ParseMode.MARKDOWN)
@@ -128,15 +128,15 @@ def chuva2(bot, update, chat_id=None):
     chove, time_of_rain, chance_of_rain = vai_chover2(location)
     logger.info(f'Chove? {chove}')
     if chove == 'Nao vai chover':
-        gif = get_random_giphy(keyword='happy')
+        img = gif.get_random_giphy(keyword='happy')
     elif chove == 'Pode chover':
-        gif = get_random_giphy(keyword='unsure')
+        img = gif.get_random_giphy(keyword='unsure')
     elif chove == 'Provavelmente vai chover':
-        gif = get_random_giphy(keyword='probably')
+        img = gif.get_random_giphy(keyword='probably')
     else:
-        gif = get_random_giphy(keyword='sad')
+        img = gif.get_random_giphy(keyword='sad')
     bot.send_document(chat_id=chat_id,
-                      document=gif, caption=f'Bom dia, *{chove}* em {location} hoje '
+                      document=img, caption=f'Bom dia, *{chove}* em {location} hoje '
                                             f'*({chance_of_rain}% at {time_of_rain})*.'
                                             f'\nMax Temp: *{max_temp}*C', timeout=5000,
                       parse_mode=telegram.ParseMode.MARKDOWN)
@@ -150,11 +150,11 @@ def scheduled_weather(bot, job):
         chove, time_of_rain, chance_of_rain = vai_chover(l)
         logger.info(f'Chove? {chove}')
         if chove == 'Vai chover':
-            gif = get_random_giphy(keyword='sad')
+            img = gif.get_random_giphy(keyword='sad')
         else:
-            gif = get_random_giphy(keyword='happy')
+            img = gif.get_random_giphy(keyword='happy')
         bot.send_document(chat_id=-1001105653255,
-                          document=gif, caption=f'Bom dia!\n'
+                          document=img, caption=f'Bom dia!\n'
                                                 f'*{chove}* hoje em {l} *({chance_of_rain}% at {time_of_rain})*.'
                                                 f'\nMax Temp: *{max_temp}*C', timeout=5000,
                           parse_mode=telegram.ParseMode.MARKDOWN)

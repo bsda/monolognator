@@ -18,7 +18,7 @@ def get_movie(id):
     return movie_detail
 
 
-def movie_search_menu(bot, update):
+def movie_search_menu(update, context):
     search = update.message.text.split('/movie ')[1]
     movie = search_movie(search)
     buttons = list()
@@ -30,11 +30,11 @@ def movie_search_menu(bot, update):
                               remove_keyboard=True)
 
 
-def movie_info(bot, update):
+def movie_info(update, context):
     query = update.callback_query
     mid = query.message.message_id
     cid = query.message.chat_id
-    bot.delete_message(chat_id=cid, message_id=mid)
+    context.bot.delete_message(chat_id=cid, message_id=mid)
     movieid = query.data.split(',')[1]
     try:
         md = get_movie(movieid)
@@ -67,7 +67,7 @@ def movie_info(bot, update):
         logger.info(f'Sending {title}')
     except Exception as e:
         logger.exception(e)
-    #     message = e
-    # bot.send_message(chat_id=cid,
-    #                  text=message, parse_mode=telegram.ParseMode.MARKDOWN,
-    #                  timeout=150)
+        message = str(e)
+    context.bot.send_message(chat_id=cid,
+                             text=message, parse_mode=telegram.ParseMode.MARKDOWN,
+                             timeout=150)

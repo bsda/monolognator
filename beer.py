@@ -129,7 +129,7 @@ def get_dry_scores(users):
     return scores
 
 
-def beer_search_menu(bot, update):
+def beer_search_menu(update, context):
     if update.message.text.startswith('/beer'):
         search = update.message.text.split('/beer ')[1]
         beers = search_untappd(search)
@@ -146,11 +146,11 @@ def beer_search_menu(bot, update):
                               remove_keyboard=True)
 
 
-def beer_info(bot, update):
+def beer_info(update, context):
     query = update.callback_query
     mid = query.message.message_id
     cid = query.message.chat_id
-    bot.delete_message(chat_id=cid, message_id=mid)
+    context.bot.delete_message(chat_id=cid, message_id=mid)
     bid = query.data.split(',')[1]
     info = get_untappd_beer(bid)
     emoji = emojify(info['country'])
@@ -164,13 +164,13 @@ def beer_info(bot, update):
             photo = random.choice(info['photos'])
         except IndexError:
             photo = 'https://untappd.akamaized.net/site/assets/images/temp/badge-beer-default.png'
-    bot.send_photo(chat_id=query.message.chat_id,
+    context.bot.send_photo(chat_id=query.message.chat_id,
                    caption=message,
                    parse_mode=telegram.ParseMode.HTML,
                    photo=photo)
 
 
-def dry_score_message(bot, update):
+def dry_score_message(update, context):
     users = cfg.get('untappd-users')
     score = get_dry_scores(users)
     sorted_score = sorted(score, key=itemgetter('days'), reverse=True)
@@ -179,12 +179,12 @@ def dry_score_message(bot, update):
     for s in sorted_score:
         days_s = 'day' if s['days'] == 1 else 'days'
         message += f" `{s['user']}`: *{s['days']}* - *{s['beer']}* by {s['brewery']}\n"
-    bot.send_message(chat_id=update.message.chat_id,
+    context.bot.send_message(chat_id=update.message.chat_id,
                      text=message, parse_mode=telegram.ParseMode.MARKDOWN,
                      timeout=150)
 
 
-def wet_score_message(bot, update):
+def wet_score_message(update, context):
     users = cfg.get('untappd-users')
     wet_score = get_wet_scores(users)
     sorted_score = sorted(wet_score, key=itemgetter('score'), reverse=True)
@@ -192,6 +192,6 @@ def wet_score_message(bot, update):
     sorted_score[0]['user'] = f"{sorted_score[0]['user']} 🏆"
     for s in sorted_score:
         message += f" `{s['user']}`: *{s['score']}* check-ins\n"
-    bot.send_message(chat_id=update.message.chat_id,
+    context.bot.send_message(chat_id=update.message.chat_id,
                      text=message, parse_mode=telegram.ParseMode.MARKDOWN,
                      timeout=150)

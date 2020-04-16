@@ -62,6 +62,7 @@ spec:
             subPath: gifs.yml
             name: gifs
           - mountPath: /opt/secrets
+            subPath: sa.json
             name: service-account
             readOnly: true
       - image: nginx

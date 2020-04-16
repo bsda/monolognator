@@ -67,7 +67,7 @@ def movie_info(update, context):
         logger.info(f'Sending {title}')
     except Exception as e:
         logger.exception(e)
-    #     message = e
-    # context.bot.send_message(chat_id=cid,
-    #                  text=message, parse_mode=telegram.ParseMode.MARKDOWN,
-    #                  timeout=150)
+        message = str(e)
+    context.bot.send_message(chat_id=cid,
+                             text=message, parse_mode=telegram.ParseMode.MARKDOWN,
+                             timeout=150)

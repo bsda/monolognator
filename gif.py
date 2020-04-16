@@ -13,8 +13,10 @@ from telegram.ext import Filters
 logger = logging.getLogger(__name__)
 cfg = config.cfg()
 
+
 def get_db():
-    db = firestore.Client.from_service_account_json(json_credentials_path='./sa.json', project='peppy-house-263912')
+    db = firestore.Client.from_service_account_json(json_credentials_path=cfg.get('service_account_path'),
+                                                    project=cfg.get('google_project'))
     doc_ref = db.collection('gifs').document('filters')
     return doc_ref
 
@@ -25,10 +27,10 @@ def get_gif_filters():
     return doc.to_dict()
 
 
-gif_filters = get_gif_filters()
 
 
 def list_aliases(keyword):
+    gif_filters = get_gif_filters()
     key = get_gif_key(keyword)
     aliases = gif_filters[key].get('aliases')
     return ', '.join(aliases)
@@ -42,6 +44,7 @@ def get_aliases(update, context):
 
 
 def update_aliases(keyword, alias):
+    gif_filters = get_gif_filters()
     doc_ref = get_db()
     key = get_gif_key(keyword)
     gif_filters[key]['aliases'].append(alias)

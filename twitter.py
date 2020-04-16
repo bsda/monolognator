@@ -35,7 +35,7 @@ class Stream(tweepy.StreamListener):
     def on_status(self, tweet):
         # Log ping msgs every 5 minutes to check if it's working
         if time.localtime().tm_min % 5 == 0:
-            logger.info(f'on_status Triggered: {tweet.user.screen_name}')
+            logger.debug(f'on_status Triggered: {tweet.user.screen_name}')
         if tweet.user.id in twitter_filters:
             logger.info(f'Tweet from {tweet.user.screen_name}.')
             if not tweet.retweeted:

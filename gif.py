@@ -173,7 +173,7 @@ def word_watcher_regex():
 
 
 def get_gif_key(word):
-    # gif_filters = get_gif_filters()
+    gif_filters = get_gif_filters()
     logger.info(f'Getting gif key for {word}')
     for i in gif_filters.keys():
         if gif_filters[i].get('aliases'):
@@ -183,7 +183,7 @@ def get_gif_key(word):
 
 
 def word_watcher_gif(update, context):
-    # gif_filters = get_gif_filters()
+    gif_filters = get_gif_filters()
     regex = word_watcher_regex()
     msg = update.message.text.lower()
     logger.info(f'Start word watcher with {msg}')

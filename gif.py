@@ -43,11 +43,24 @@ def get_aliases(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
 
 
+def list_aliases(update, context):
+    gif_filters = get_gif_filters()
+    text = str()
+    for k in gif_filters.keys():
+        text += f"*{k}* = {gif_filters[k].get('aliases')}\n"
+    context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
+
+
+
 def update_aliases(keyword, alias):
     gif_filters = get_gif_filters()
     doc_ref = get_db()
     key = get_gif_key(keyword)
-    gif_filters[key]['aliases'].append(alias)
+    print(gif_filters[key])
+    if 'aliases' in gif_filters[key]:
+        gif_filters[key]['aliases'].append(alias)
+    else:
+        gif_filters[key]['aliases'] = [alias]
     gif_filters[key]['aliases'] = list(set(gif_filters[key]['aliases']))
     doc_ref.set(gif_filters)
     filters = get_gif_filters()

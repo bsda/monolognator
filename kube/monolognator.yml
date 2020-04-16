@@ -22,9 +22,6 @@ spec:
         - name: service-account
           secret:
             defaultMode: 420
-            items:
-              - key: sa.json
-                path: sa.jaon
             secretName: service-account
         - name: nginx-conf
           configMap:
@@ -61,7 +58,7 @@ spec:
           - mountPath: /app/gifs.yml
             subPath: gifs.yml
             name: gifs
-          - mountPath: /opt/secrets
+          - mountPath: /opt/secrets/sa.json
             subPath: sa.json
             name: service-account
             readOnly: true

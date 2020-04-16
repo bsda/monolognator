@@ -164,7 +164,7 @@ def get_tenor_gif(gifid):
 
 
 def word_watcher_regex():
-    # gif_filters = get_gif_filters()
+    gif_filters = get_gif_filters()
     keys = ([i for i in gif_filters.keys()])
     alias_lists = [gif_filters[i].get('aliases') for i in gif_filters.keys() if gif_filters[i].get('aliases')]
     aliases = ([i for sublist in alias_lists for i in sublist])

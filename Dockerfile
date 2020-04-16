@@ -7,7 +7,7 @@ WORKDIR /install
 COPY requirements.txt /requirements.txt
 RUN pip install --prefix=/install -r /requirements.txt
 
-FROM python:3.8-alpine
+FROM python:3.8-slim
 
 COPY --from=builder /install /usr/local
 WORKDIR /app
@@ -22,5 +22,6 @@ ADD corona.py /app
 ADD entry.sh /app
 ADD movies.py /app
 ADD utils.py /app
-RUN apk add openssl bash
+#RUN apk update && apk add --no-cache openssl bash libstdc++ libc6-compat protobuf
 ENTRYPOINT [ "python3", "bot.py" ]
+

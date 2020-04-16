@@ -19,6 +19,13 @@ spec:
         app: monolognator
     spec:
       volumes:
+        - name: service-account
+          secret:
+            defaultMode: 420
+            items:
+              - key: sa.json
+                path: sa.jaon
+            secretName: service-account
         - name: nginx-conf
           configMap:
             name: nginx-conf
@@ -57,14 +64,6 @@ spec:
           - mountPath: /opt/secrets
             name: service-account
             readOnly: true
-          volumes:
-            - name: service-account
-              secret:
-                defaultMode: 420
-                items:
-                  - key: sa.json
-                    path: sa.jaon
-                secretName: service-account
       - image: nginx
         name: nginx
         resources:

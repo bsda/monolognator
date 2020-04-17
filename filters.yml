@@ -34,11 +34,6 @@ users:
       - cus
       - viado
       - puta
-  37963496:
-    name: DHSCgovuk
-    type: string
-    filter:
-      - COVID19
   5402612:
     name: BBCBreaking
     type: string

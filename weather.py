@@ -5,8 +5,8 @@ import os
 import requests
 import time
 import datetime
-from geopy import Nominatim
-import gif 
+from geopy import Nominatim, DataBC
+import gif
 import config
 logger = logging.getLogger(__name__)
 cfg = config.cfg()
@@ -15,7 +15,7 @@ cfg = config.cfg()
 # WEATHER
 def get_weather(location='London'):
     logger.info(f'Getting weather for {location}')
-    geo = Nominatim(user_agent='Monolognator')
+    geo = DataBC(user_agent='Monolognator')
     loc = geo.geocode(location)
     latlon = f'{loc.latitude}, {loc.longitude}'
     # location = '51.4975,-0.1357'
@@ -25,7 +25,7 @@ def get_weather(location='London'):
     results = re.json()
     return results
 
-
+print(get_weather())
 
 
 def chance_of_rain_today(results):
@@ -60,8 +60,8 @@ def vai_chover2(location):
     return 'Vai chover', time_of_rain, chance_of_rain
 
 
-def vai_chover(location):
-    results = get_weather(location)
+def vai_chover(results):
+    # results = get_weather(location)
     # getting the highest chance of precipitation in the next 24h
     rain_threshold = 11
     chance_of_rain, time_of_rain = chance_of_rain_today(results)
@@ -70,7 +70,7 @@ def vai_chover(location):
     return 'Nao vai chover', time_of_rain, chance_of_rain
 
 
-def chuva(bot, update, chat_id=None):
+def chuva(update, context, chat_id=None):
     if update.message.text == '/chuva':
         location = 'London'
     else:
@@ -86,13 +86,13 @@ def chuva(bot, update, chat_id=None):
         alert_time = time.strftime('%l%p', time.localtime(results['alerts'][0]['time']))
         alert_description = results['alerts'][0]['description']
     max_temp = results['daily']['data'][0]['temperatureMax']
-    chove, time_of_rain, chance_of_rain = vai_chover(location)
+    chove, time_of_rain, chance_of_rain = vai_chover(results)
     logger.info(f'Chove? {chove}')
     if chove == 'Vai chover':
-        img = gif.gif.get_random_giphy(keyword='sad')
+        img = gif.get_random_giphy(keyword='sad')
     else:
         img = gif.get_random_giphy(keyword='happy')
-    bot.send_document(chat_id=chat_id,
+    context.bot.send_document(chat_id=chat_id,
                       document=img, caption=f'Bom dia, *{chove}* em {location} hoje '
                                             f'*({chance_of_rain}% at {time_of_rain})*.'
                                             f'\nMax Temp: *{max_temp}*C', timeout=5000,
@@ -100,21 +100,21 @@ def chuva(bot, update, chat_id=None):
                       parse_mode=telegram.ParseMode.MARKDOWN)
     # Send alert if there is one
     if 'alerts' in results.keys():
-        bot.send_document(chat_id=chat_id,
+        context.bot.send_document(chat_id=chat_id,
                           document=gif.get_random_giphy('extreme weather'),
                           caption=f'*Incoming Weather Alert for {location}*',
                           timeout=5000,
                           parse_mode=telegram.ParseMode.MARKDOWN)
-        bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.TYPING)
         time.sleep(5)
-        bot.send_message(chat_id=chat_id,
+        context.bot.send_message(chat_id=chat_id,
                          text=f'Alerta para {location}:\n'
                               f'{alert} at {alert_time}\n\n'
                               f'{alert_description}',
                          timeout=5000)
 
 
-def chuva2(bot, update, chat_id=None):
+def chuva2(update, context, chat_id=None):
     if update.message.text == '/chuva2':
         location = 'London'
     else:
@@ -135,32 +135,32 @@ def chuva2(bot, update, chat_id=None):
         img = gif.get_random_giphy(keyword='probably')
     else:
         img = gif.get_random_giphy(keyword='sad')
-    bot.send_document(chat_id=chat_id,
+    context.bot.send_document(chat_id=chat_id,
                       document=img, caption=f'Bom dia, *{chove}* em {location} hoje '
                                             f'*({chance_of_rain}% at {time_of_rain})*.'
                                             f'\nMax Temp: *{max_temp}*C', timeout=5000,
                       parse_mode=telegram.ParseMode.MARKDOWN)
 
 
-def scheduled_weather(bot, job):
-    locations = ['london', 'Maisons-Laffitte', 'Barcelona', 'Geneva']
+def scheduled_weather(context):
+    locations = ['london', 'Maisons-Laffitte', 'Barcelona', 'Megeve']
     for l in locations:
         results = get_weather(l)
         max_temp = results['daily']['data'][0]['temperatureMax']
-        chove, time_of_rain, chance_of_rain = vai_chover(l)
+        chove, time_of_rain, chance_of_rain = vai_chover(results)
         logger.info(f'Chove? {chove}')
         if chove == 'Vai chover':
             img = gif.get_random_giphy(keyword='sad')
         else:
             img = gif.get_random_giphy(keyword='happy')
-        bot.send_document(chat_id=-1001105653255,
+        context.bot.send_document(chat_id=-1001105653255,
                           document=img, caption=f'Bom dia!\n'
                                                 f'*{chove}* hoje em {l} *({chance_of_rain}% at {time_of_rain})*.'
                                                 f'\nMax Temp: *{max_temp}*C', timeout=5000,
                           parse_mode=telegram.ParseMode.MARKDOWN)
 
 
-def send_weather(bot, update, location=None):
+def send_weather(update, context, location=None):
     """
     Currenty:
     ['currently']['time']
@@ -223,6 +223,6 @@ def send_weather(bot, update, location=None):
     {results['daily']['summary']}
     {minutely}'''
 
-    bot.send_message(chat_id=update.message.chat_id,
+    context.bot.send_message(chat_id=update.message.chat_id,
                      text=f'*Monolognator Weather Report powered by darksky.net*:\n\n{message}',
                      parse_mode=telegram.ParseMode.MARKDOWN)

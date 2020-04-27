@@ -28,7 +28,7 @@ def query_limit(update, context):
     logger.info('================================================')
 
 
-def random_limit(update):
+def random_limit(update, context):
     global msg_limit
     msg_limit[update.message.chat_id] = random.randint(8, 12)
     # context.bot.send_message(chat_id=my_chat_id,
@@ -55,7 +55,7 @@ def set_limit(update, context):
 
 
 # MONOLOGNATE STUFF
-def delete_messages(bot, user, chat):
+def delete_messages(context, user, chat):
     # Delete messages from group
     for m in set(counter[chat][user]['msg_ids']):
         context.bot.delete_message(chat_id=chat, message_id=m)

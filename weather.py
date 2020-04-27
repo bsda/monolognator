@@ -15,7 +15,7 @@ cfg = config.cfg()
 # WEATHER
 def get_weather(location='London'):
     logger.info(f'Getting weather for {location}')
-    geo = DataBC(user_agent='Monolognator')
+    geo = Nominatim(user_agent='Monolognator')
     loc = geo.geocode(location)
     latlon = f'{loc.latitude}, {loc.longitude}'
     # location = '51.4975,-0.1357'
@@ -25,7 +25,6 @@ def get_weather(location='London'):
     results = re.json()
     return results
 
-print(get_weather())
 
 
 def chance_of_rain_today(results):

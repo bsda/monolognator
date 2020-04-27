@@ -28,7 +28,7 @@ def query_limit(update, context):
     logger.info('================================================')
 
 
-def random_limit(update, context):
+def random_limit(update):
     global msg_limit
     msg_limit[update.message.chat_id] = random.randint(8, 12)
     # context.bot.send_message(chat_id=my_chat_id,
@@ -38,7 +38,7 @@ def random_limit(update, context):
     return msg_limit[update.message.chat_id]
 
 
-def set_limit(update, context):
+def set_limit(update):
     logger.debug(update.message.text)
     global msg_limit
     msg = update.message.text
@@ -115,7 +115,7 @@ def hit_limit(chat, user, update):
 def monolognate(chat, user, update, context):
     logger.info(f'Monologue by {update.message.from_user.first_name}')
     monologue = '\n'.join(counter[chat][user]['msgs'])
-    delete_messages(bot, user, chat)
+    delete_messages(context, user, chat)
     gif.send_random_tenor(update, context, 'tsunami')
 
     try:

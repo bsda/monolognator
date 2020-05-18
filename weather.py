@@ -88,9 +88,9 @@ def chuva(update, context, chat_id=None):
     chove, time_of_rain, chance_of_rain = vai_chover(results)
     logger.info(f'Chove? {chove}')
     if chove == 'Vai chover':
-        img = gif.get_random_giphy(keyword='sad')
+        img = gif.get_random_tenor(keyword='sad')
     else:
-        img = gif.get_random_giphy(keyword='happy')
+        img = gif.get_random_tenor(keyword='happy')
     context.bot.send_document(chat_id=chat_id,
                       document=img, caption=f'Bom dia, *{chove}* em {location} hoje '
                                             f'*({chance_of_rain}% at {time_of_rain})*.'
@@ -100,7 +100,7 @@ def chuva(update, context, chat_id=None):
     # Send alert if there is one
     if 'alerts' in results.keys():
         context.bot.send_document(chat_id=chat_id,
-                          document=gif.get_random_giphy('extreme weather'),
+                          document=gif.get_random_tenor('extreme weather'),
                           caption=f'*Incoming Weather Alert for {location}*',
                           timeout=5000,
                           parse_mode=telegram.ParseMode.MARKDOWN)
@@ -127,13 +127,13 @@ def chuva2(update, context, chat_id=None):
     chove, time_of_rain, chance_of_rain = vai_chover2(location)
     logger.info(f'Chove? {chove}')
     if chove == 'Nao vai chover':
-        img = gif.get_random_giphy(keyword='happy')
+        img = gif.get_random_tenor(keyword='happy')
     elif chove == 'Pode chover':
-        img = gif.get_random_giphy(keyword='unsure')
+        img = gif.get_random_tenor(keyword='unsure')
     elif chove == 'Provavelmente vai chover':
-        img = gif.get_random_giphy(keyword='probably')
+        img = gif.get_random_tenor(keyword='probably')
     else:
-        img = gif.get_random_giphy(keyword='sad')
+        img = gif.get_random_tenor(keyword='sad')
     context.bot.send_document(chat_id=chat_id,
                       document=img, caption=f'Bom dia, *{chove}* em {location} hoje '
                                             f'*({chance_of_rain}% at {time_of_rain})*.'
@@ -142,16 +142,16 @@ def chuva2(update, context, chat_id=None):
 
 
 def scheduled_weather(context):
-    locations = ['london', 'Sartrouville', 'Barcelona', 'Megeve']
+    locations = ['london', 'Sartrouville', 'Barcelona', 'Geneva']
     for l in locations:
         results = get_weather(l)
         max_temp = results['daily']['data'][0]['temperatureMax']
         chove, time_of_rain, chance_of_rain = vai_chover(results)
         logger.info(f'Chove? {chove}')
         if chove == 'Vai chover':
-            img = gif.get_random_giphy(keyword='sad')
+            img = gif.get_random_tenor(keyword='sad')
         else:
-            img = gif.get_random_giphy(keyword='happy')
+            img = gif.get_random_tenor(keyword='happy')
         context.bot.send_document(chat_id=-1001105653255,
                           document=img, caption=f'Bom dia!\n'
                                                 f'*{chove}* hoje em {l} *({chance_of_rain}% at {time_of_rain})*.'

@@ -139,14 +139,16 @@ def covid_br():
     total_casos = 0
     total_mortes = 0
     try:
-        res = requests.get('https://xx9p7hp1p7.execute-api.us-east-1.amazonaws.com/prod/PortalMapa', headers=headers).json()['results']
+        res = requests.get('https://xx9p7hp1p7.execute-api.us-east-1.amazonaws.com/prod/PortalEstado', headers=headers).json()
     except (requests.exceptions.RequestException, json.decoder.JSONDecodeError) as e:
         return e
     for i in res:
-        row = [sigla(i.get('nome')), i.get('qtd_confirmado'), i.get('qtd_obito')]
+        casos = i.get('casosAcumulado')
+        mortes = i.get('obitosAcumulado')
+        row = [i.get('nome'), casos, mortes]
         rows.append(row)
-        total_casos += i.get('qtd_confirmado')
-        total_mortes += i.get('qtd_obito')
+        total_casos += casos
+        total_mortes += mortes
     rows.append(['Total', total_casos, total_mortes])
     table = tabulate.tabulate(rows, headers=['Estado', 'Casos', 'Mortes'], tablefmt='psql')
     return f'<pre>\nBrasil sil sil:\n{table}\n</pre>\nhttps://covid.saude.gov.br'

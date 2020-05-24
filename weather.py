@@ -8,6 +8,7 @@ import datetime
 from geopy import Nominatim, DataBC
 import gif
 import config
+import random
 logger = logging.getLogger(__name__)
 cfg = config.cfg()
 
@@ -149,9 +150,9 @@ def scheduled_weather(context):
         chove, time_of_rain, chance_of_rain = vai_chover(results)
         logger.info(f'Chove? {chove}')
         if chove == 'Vai chover':
-            img = gif.get_random_tenor(keyword='sad')
+            img = gif.get_random_tenor(keyword='sad', pos=random.choice(4))
         else:
-            img = gif.get_random_tenor(keyword='happy')
+            img = gif.get_random_tenor(keyword='happy dance', pos=random.choice(4))
         context.bot.send_document(chat_id=-1001105653255,
                           document=img, caption=f'Bom dia!\n'
                                                 f'*{chove}* hoje em {l} *({chance_of_rain}% at {time_of_rain})*.'

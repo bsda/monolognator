@@ -137,14 +137,16 @@ def search_tenor(keyword, offset=0):
     return gifs
 
 
-def get_random_tenor(keyword):
+def get_random_tenor(keyword, pos=None):
+    if not pos:
+        pos = random.choice(range(30))
     tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'media_filter': 'minimal',
-              'q': keyword, 'limit': 50, 'pos': random.choice(range(50))}
+              'q': keyword, 'limit': 50, 'pos': pos}
     try:
-        res = requests.get(f'https://api.tenor.com/v1/random', params=params).json()['results']
-        gifs = [ i for i in res if i['media'][0]['mediumgif']['size'] <= 10000000]
-        gif = random.choice(gifs)['media'][0]['mediumgif']['url']
+        res = requests.get(f'https://api.tenor.com/v1/search', params=params).json()['results']
+        gifs = [ i for i in res if i['media'][0]['gif']['size'] <= 10000000]
+        gif = random.choice(gifs)['media'][0]['gif']['url']
         logger.info(gif)
         return gif
     except requests.exceptions.RequestException as e:

@@ -88,9 +88,9 @@ def chuva(update, context, chat_id=None):
     chove, time_of_rain, chance_of_rain = vai_chover(results)
     logger.info(f'Chove? {chove}')
     if chove == 'Vai chover':
-        img = gif.get_random_tenor(keyword='sad')
+        img = gif.get_random_tenor(keyword='sadness')
     else:
-        img = gif.get_random_tenor(keyword='happy')
+        img = gif.get_random_tenor(keyword='happiness')
     context.bot.send_document(chat_id=chat_id,
                       document=img, caption=f'Bom dia, *{chove}* em {location} hoje '
                                             f'*({chance_of_rain}% at {time_of_rain})*.'

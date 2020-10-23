@@ -5,6 +5,8 @@ import logging
 import requests
 import uuid
 import config
+import yaml
+
 from google.cloud import firestore
 from telegram.ext import Dispatcher
 from telegram.ext import Filters
@@ -12,6 +14,7 @@ from telegram.ext import Filters
 
 logger = logging.getLogger(__name__)
 cfg = config.cfg()
+
 
 
 def get_db():
@@ -22,9 +25,9 @@ def get_db():
 
 
 def get_gif_filters():
-    doc_ref = get_db()
-    doc = doc_ref.get()
-    return doc.to_dict()
+    with open('gifs.yml') as f:
+        gif_filters = yaml.load(f, Loader=yaml.FullLoader)
+    return gif_filters
 
 
 
@@ -140,7 +143,7 @@ def search_tenor(keyword, offset=0):
 def get_random_tenor(keyword):
     tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'media_filter': 'minimal',
-              'q': keyword, 'limit': 50, 'pos': random.choice(range(50))}
+              'q': keyword, 'limit': 50, 'pos': random.choice(range(10))}
     try:
         res = requests.get(f'https://api.tenor.com/v1/random', params=params).json()['results']
         gifs = [ i for i in res if i['media'][0]['mediumgif']['size'] <= 10000000]

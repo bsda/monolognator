@@ -143,7 +143,7 @@ def search_tenor(keyword, offset=0):
 def get_random_tenor(keyword):
     tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'media_filter': 'minimal',
-              'q': keyword, 'limit': 50, 'pos': random.choice(range(10))}
+              'q': keyword, 'limit': 50, 'pos': random.choice(range(3))}
     try:
         res = requests.get(f'https://api.tenor.com/v1/random', params=params).json()['results']
         gifs = [ i for i in res if i['media'][0]['mediumgif']['size'] <= 10000000]

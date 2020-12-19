@@ -142,8 +142,7 @@ def beer_search_menu(update, context):
         buttons.append(InlineKeyboardButton(f'{emoji}  {b["name"]} by {b["brewery"]} - ({b["checkin_count"]}) checkins',
                                             callback_data=f'beer,{b["bid"]}'))
     reply_markup = InlineKeyboardMarkup(build_menu(buttons, n_cols=1))
-    update.message.reply_text('Which one do you mean?', reply_markup=reply_markup,
-                              remove_keyboard=True)
+    update.message.reply_text('Which one do you mean?', reply_markup=reply_markup)
 
 
 def beer_info(update, context):

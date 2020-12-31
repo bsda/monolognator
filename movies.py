@@ -26,8 +26,7 @@ def movie_search_menu(update, context):
         buttons.append(InlineKeyboardButton(f'{m.data.get("title")} - {m.data.get("year")}',
                        callback_data=f'movie,{m.movieID}'))
     reply_markup = InlineKeyboardMarkup(build_menu(buttons, n_cols=2))
-    update.message.reply_text('Which one do you mean?', reply_markup=reply_markup,
-                              remove_keyboard=True)
+    update.message.reply_text('Which one do you mean?', reply_markup=reply_markup)
 
 
 def movie_info(update, context):

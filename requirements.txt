@@ -16,3 +16,4 @@ plotly
 plotly-express
 kaleido
 psutil
+humanize

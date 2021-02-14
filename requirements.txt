@@ -12,3 +12,7 @@ beautifulsoup4
 tabulate
 imdbpy
 google-cloud-firestore
+plotly
+plotly-express
+kaleido
+psutil

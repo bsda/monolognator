@@ -8,10 +8,11 @@ from telegram.ext import Filters, InlineQueryHandler, RegexHandler
 from telegram.ext import CallbackQueryHandler
 from beer import beer_search_menu, beer_info, dry_score_message, wet_score_message
 from monologue import query_limit, set_limit, handle_counter
-from movies import movie_search_menu, movie_info
+from movies import movie_search_menu, movie_info, person_search_menu, person_info
 from twitter import start_twitter_stream, send_tweets
 from weather import chuva, chuva2, scheduled_weather, send_weather
 from corona import get_corona, get_covid, get_covidbr
+from vaccine import get_vaccine
 from telegram.error import (TelegramError, Unauthorized, BadRequest,
                             TimedOut, ChatMigrated, NetworkError)
 
@@ -100,7 +101,10 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('corona', get_corona))
     updater.dispatcher.add_handler(CommandHandler('covid', get_covid))
     updater.dispatcher.add_handler(CommandHandler('covidbr', get_covidbr))
+    updater.dispatcher.add_handler(CommandHandler('vac', get_vaccine))
     updater.dispatcher.add_handler(CommandHandler('movie', movie_search_menu))
+    updater.dispatcher.add_handler(CommandHandler('person', person_search_menu))
+
     # GIF handlers
     updater.dispatcher.add_handler(CommandHandler('list_alias', gif.get_aliases))
     updater.dispatcher.add_handler(CommandHandler('list_aliases', gif.list_aliases))
@@ -109,6 +113,8 @@ def main():
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(gif.word_watcher_regex()), gif.word_watcher_gif))
     updater.dispatcher.add_handler(CallbackQueryHandler(beer_info, pattern='beer'))
     updater.dispatcher.add_handler(CallbackQueryHandler(movie_info, pattern='^movie'))
+    updater.dispatcher.add_handler(CallbackQueryHandler(person_info, pattern='^person'))
+
 
     updater.dispatcher.add_error_handler(error_callback)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))

@@ -15,7 +15,7 @@ cfg = config.cfg()
 # WEATHER
 def get_weather(location='London'):
     logger.info(f'Getting weather for {location}')
-    geo = Nominatim(user_agent='Monolognator')
+    geo = Nominatim(user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.190 Safari/537.36')
     loc = geo.geocode(location)
     latlon = f'{loc.latitude}, {loc.longitude}'
     # location = '51.4975,-0.1357'
@@ -44,7 +44,7 @@ def chance_of_rain_today(results):
     if highest_chance > 0:
         return highest_chance, highest_chance_time
     else:
-        return 0, None
+        return 0, 'all day long'
 
 
 def vai_chover2(location):

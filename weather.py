@@ -88,9 +88,9 @@ def chuva(update, context, chat_id=None):
     chove, time_of_rain, chance_of_rain = vai_chover(results)
     logger.info(f'Chove? {chove}')
     if chove == 'Vai chover':
-        img = gif.get_random_tenor(keyword='sadness')
+        img = gif.get_random_from_search(keyword='mourning')
     else:
-        img = gif.get_random_tenor(keyword='happiness')
+        img = gif.get_random_from_search(keyword='celebration')
     context.bot.send_document(chat_id=chat_id,
                       document=img, caption=f'Bom dia, *{chove}* em {location} hoje '
                                             f'*({chance_of_rain}% {time_of_rain})*.'
@@ -142,16 +142,16 @@ def chuva2(update, context, chat_id=None):
 
 
 def scheduled_weather(context):
-    locations = ['london', 'Sartrouville', 'Barcelona', 'Geneva']
+    locations = ['London', 'Sartrouville', 'Barcelona', 'Geneva']
     for l in locations:
         results = get_weather(l)
         max_temp = results['daily']['data'][0]['temperatureMax']
         chove, time_of_rain, chance_of_rain = vai_chover(results)
         logger.info(f'Chove? {chove}')
         if chove == 'Vai chover':
-            img = gif.get_random_tenor(keyword='sad')
+            img = gif.get_random_from_search(keyword='mourning')
         else:
-            img = gif.get_random_tenor(keyword='happy')
+            img = gif.get_random_from_search(keyword='celebration')
         context.bot.send_document(chat_id=-1001105653255,
                           document=img, caption=f'Bom dia!\n'
                                                 f'*{chove}* hoje em {l} *({chance_of_rain}% at {time_of_rain})*.'

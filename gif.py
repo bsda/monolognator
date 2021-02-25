@@ -127,17 +127,26 @@ def get_random_giphy(keyword=None):
     return gif
 
 
-def search_tenor(keyword, offset=0):
+def search_tenor(keyword, offset=0, limit=40):
     gifs = []
     tenor_token = cfg.get('tenor_token')
     params = {'key': tenor_token, 'media_filter': 'minimal',
-              'q': keyword, 'limit': 40, 'pos': offset}
+              'q': keyword, 'limit': limit, 'pos': offset}
     res = requests.get(f'https://api.tenor.com/v1/search', params=params)
     for g in res.json()['results']:
         for m in g['media']:
-            gifs.append({'id': g['id'], 'url': m['gif']['url'],
-                         'thumb_url': m['gif']['preview']})
+            if m['gif']['size'] <= 10000000:
+                gifs.append({'id': g['id'], 'url': m['gif']['url'],
+                             'thumb_url': m['gif']['preview']})
     return gifs
+
+
+def get_random_from_search(keyword):
+    gif_list = list()
+    for offset in range(0, 3):
+        gif_list.extend(search_tenor(keyword, offset=offset, limit=50))
+    gif = random.choice(gif_list)['url']
+    return gif
 
 
 def get_random_tenor(keyword):

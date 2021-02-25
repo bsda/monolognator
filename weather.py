@@ -93,7 +93,7 @@ def chuva(update, context, chat_id=None):
         img = gif.get_random_tenor(keyword='happiness')
     context.bot.send_document(chat_id=chat_id,
                       document=img, caption=f'Bom dia, *{chove}* em {location} hoje '
-                                            f'*({chance_of_rain}% at {time_of_rain})*.'
+                                            f'*({chance_of_rain}% {time_of_rain})*.'
                                             f'\nMax Temp: *{max_temp}*C', timeout=5000,
 
                       parse_mode=telegram.ParseMode.MARKDOWN)

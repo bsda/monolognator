@@ -184,11 +184,16 @@ def monolognate(chat, user, update, context):
 
 
 def handle_counter(update, context):
-    user = update.message.from_user.id
+    if not update.message.from_user:
+        user = update.message.from_user.id
+        name = update.message.from_user.first_name
+    else:
+        user = 'Unknown'
+        name = 'Unknown'
     chat = update.message.chat_id
     message = update.message
     logger.info(f'Msg on {update.message.chat.title}({chat})'
-                f' from {update.message.from_user.first_name}({user}): {update.message.text}')
+                f' from {name}({user}): {update.message.text}')
 
     # If it's a new user or the count was reset earlier
     if chat not in counter or user not in counter[chat] and not message.reply_to_message:

@@ -212,7 +212,7 @@ def send_weather(update, context, location=None):
     Chance of Rain: {results['currently']['precipProbability'] * 100}%, Current Temperature: {results['currently']['temperature']}C
 
     *Summary of conditions for the next hour:*
-    {results['minutely']['summary']}
+    {minutely}
 
     *Conditions for the rest of the day:*
     {results['hourly']['summary']}
@@ -220,7 +220,7 @@ def send_weather(update, context, location=None):
 
     *Summary of conditions for the rest of the week:*
     {results['daily']['summary']}
-    {minutely}'''
+    '''
 
     context.bot.send_message(chat_id=update.message.chat_id,
                      text=f'*Monolognator Weather Report powered by darksky.net*:\n\n{message}',

@@ -108,7 +108,6 @@ def main():
     # GIF handlers
     updater.dispatcher.add_handler(CommandHandler('list_alias', gif.get_aliases))
     updater.dispatcher.add_handler(CommandHandler('list_aliases', gif.list_aliases))
-    updater.dispatcher.add_handler(CommandHandler('add_alias', gif.add_alias))
     updater.dispatcher.add_handler(InlineQueryHandler(gif.inlinequery))
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(gif.word_watcher_regex()), gif.word_watcher_gif))
     updater.dispatcher.add_handler(CallbackQueryHandler(beer_info, pattern='beer'))

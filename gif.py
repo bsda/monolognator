@@ -7,7 +7,6 @@ import uuid
 import config
 import yaml
 
-from google.cloud import firestore
 from telegram.ext import Dispatcher
 from telegram.ext import Filters
 
@@ -17,11 +16,11 @@ cfg = config.cfg()
 
 
 
-def get_db():
-    db = firestore.Client.from_service_account_json(json_credentials_path=cfg.get('service_account_path'),
-                                                    project=cfg.get('google_project'))
-    doc_ref = db.collection('gifs').document('filters')
-    return doc_ref
+# def get_db():
+#     db = firestore.Client.from_service_account_json(json_credentials_path=cfg.get('service_account_path'),
+#                                                     project=cfg.get('google_project'))
+#     doc_ref = db.collection('gifs').document('filters')
+#     return doc_ref
 
 
 def get_gif_filters():
@@ -55,31 +54,31 @@ def list_aliases(update, context):
 
 
 
-def update_aliases(keyword, alias):
-    gif_filters = get_gif_filters()
-    doc_ref = get_db()
-    key = get_gif_key(keyword)
-    print(gif_filters[key])
-    if 'aliases' in gif_filters[key]:
-        gif_filters[key]['aliases'].append(alias)
-    else:
-        gif_filters[key]['aliases'] = [alias]
-    gif_filters[key]['aliases'] = list(set(gif_filters[key]['aliases']))
-    doc_ref.set(gif_filters)
-    filters = get_gif_filters()
-    aliases = filters[key].get('aliases')
-    dp = Dispatcher.get_instance()
-    dp.handlers[0][19].filters = Filters.regex(filters)
-    return aliases
+# def update_aliases(keyword, alias):
+#     gif_filters = get_gif_filters()
+#     doc_ref = get_db()
+#     key = get_gif_key(keyword)
+#     print(gif_filters[key])
+#     if 'aliases' in gif_filters[key]:
+#         gif_filters[key]['aliases'].append(alias)
+#     else:
+#         gif_filters[key]['aliases'] = [alias]
+#     gif_filters[key]['aliases'] = list(set(gif_filters[key]['aliases']))
+#     doc_ref.set(gif_filters)
+#     filters = get_gif_filters()
+#     aliases = filters[key].get('aliases')
+#     dp = Dispatcher.get_instance()
+#     dp.handlers[0][19].filters = Filters.regex(filters)
+#     return aliases
 
 
-def add_alias(update, context):
-    command = update.message.text.split('/add_alias ')[1]
-    keyword, alias = command.split('=')
-    aliases = ', '.join(update_aliases(keyword, alias)).replace("*", "\\*")
-    text = f'Filter updated, *{alias}* added to {keyword}\n'
-    text += f'*New filter*:\n{aliases}'
-    context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
+# def add_alias(update, context):
+#     command = update.message.text.split('/add_alias ')[1]
+#     keyword, alias = command.split('=')
+#     aliases = ', '.join(update_aliases(keyword, alias)).replace("*", "\\*")
+#     text = f'Filter updated, *{alias}* added to {keyword}\n'
+#     text += f'*New filter*:\n{aliases}'
+#     context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 

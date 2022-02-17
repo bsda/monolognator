@@ -239,7 +239,7 @@ def generate_flex_graph_all():
     new_flex = add_empty_dates(flex)
     df = pd.read_json(json.dumps(new_flex))
     total = df['flex'].sum()
-    fig = px.scatter(
+    fig = px.bar(
         df,
         x='date',
         y='flex',

@@ -196,6 +196,27 @@ def get_users():
         return result
 
 
+def get_modality(user):
+    conn = db_connect()
+    query = '''
+    select m.modality from CHPX_modalities m
+    join CHPX_users u on u.ID_modality = m.ID_modality 
+    where u.username = %s
+    '''
+    try:
+        with conn.cursor() as cursor:
+            rows = cursor.execute(query, user)
+            if rows:
+                result = cursor.fetchone()[0]
+            else:
+                return {}
+    except Exception as e:
+        logger.error(f'Request does not exist: {e}')
+        pass
+    else:
+        return result
+
+
 
 def add_empty_dates(derp):
     derp = derp
@@ -208,8 +229,11 @@ def add_empty_dates(derp):
     return derp
 
 
+
+
 def generate_flex_graph(user):
-    prog = progression()
+    modality = get_modality(user)
+    prog = progression(modality)
     flex = get_flex_day(user)
     # flex.extend(prog)
     prog_df = pd.read_json(json.dumps(prog))
@@ -230,7 +254,7 @@ def generate_flex_graph(user):
         y=prog_df['flex'],
         name='daily expected'
     ))
-    fig.show()
+    # fig.show()
     fig.write_image(f'{user}.png', width=1200, height=675)
 
 
@@ -328,4 +352,4 @@ def flex_menu(update, context):
 # progression('nanica')
 # generate_flex_graph('lalo')
 # generate_prata_standings()
-generate_standings('nanica')
+# generate_standings('nanica')

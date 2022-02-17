@@ -9,13 +9,13 @@ from telegram.ext import CallbackQueryHandler
 from beer import beer_search_menu, beer_info, dry_score_message, wet_score_message
 from monologue import query_limit, set_limit, handle_counter
 from movies import movie_search_menu, movie_info, person_search_menu, person_info
-from twitter import start_twitter_stream, send_tweets
+# from twitter import start_twitter_stream, send_tweets
 from weather import chuva, chuva2, scheduled_weather, send_weather
 from corona import get_corona, get_covid, get_covidbr
 from vaccine import get_vaccine
 from telegram.error import (TelegramError, Unauthorized, BadRequest,
                             TimedOut, ChatMigrated, NetworkError)
-
+import flex
 
 cfg = config.cfg()
 with open('gifs.yml') as f:
@@ -104,6 +104,13 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('vac', get_vaccine))
     updater.dispatcher.add_handler(CommandHandler('movie', movie_search_menu))
     updater.dispatcher.add_handler(CommandHandler('person', person_search_menu))
+    updater.dispatcher.add_handler(CommandHandler('flex_pct', flex.send_percent_all))
+    updater.dispatcher.add_handler(CommandHandler('flex', flex.send_graph))
+    updater.dispatcher.add_handler(CommandHandler('prata', flex.send_prata))
+    updater.dispatcher.add_handler(CommandHandler('nanica', flex.send_nanica))
+
+
+
 
     # GIF handlers
     updater.dispatcher.add_handler(CommandHandler('list_alias', gif.get_aliases))
@@ -115,14 +122,15 @@ def main():
     updater.dispatcher.add_handler(CallbackQueryHandler(person_info, pattern='^person'))
 
 
+
     updater.dispatcher.add_error_handler(error_callback)
-    updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
+    # updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
-    tweet_job = j.run_repeating(send_tweets, interval=60, first=20)
-    start_twitter_stream()
+    # tweet_job = j.run_repeating(send_tweets, interval=60, first=20)
+    # start_twitter_stream()
     if method == 'polling':
-        updater.start_polling(clean=True)
+        updater.start_polling(drop_pending_updates=True)
     else:
         webhook_url = cfg.get('webhook-url')
         webhook_url = webhook_url + '/' + token

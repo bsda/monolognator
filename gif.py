@@ -154,8 +154,8 @@ def get_random_tenor(keyword):
               'q': keyword, 'limit': 50, 'pos': random.choice(range(3))}
     try:
         res = requests.get(f'https://api.tenor.com/v1/random', params=params).json()['results']
-        gifs = [ i for i in res if i['media'][0]['mediumgif']['size'] <= 10000000]
-        gif = random.choice(gifs)['media'][0]['mediumgif']['url']
+        gifs = [ i for i in res if i['media'][0]['gif']['size'] <= 10000000]
+        gif = random.choice(gifs)['media'][0]['gif']['url']
         logger.info(gif)
         return gif
     except requests.exceptions.RequestException as e:
@@ -181,7 +181,7 @@ def get_tenor_gif(gifid):
     params = {'key': tenor_token, 'ids': gifid}
     res = requests.get(f'https://api.tenor.com/v1/gifs', params=params)
     try:
-        gif = res.json()['results'][0]['media'][0]['mediumgif']['url']
+        gif = res.json()['results'][0]['media'][0]['gif']['url']
         return gif
     except requests.exceptions.RequestException as e:
         logger.error(f'Failed to get {gifid} on tenor: {e}')

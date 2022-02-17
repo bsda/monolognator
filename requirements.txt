@@ -16,5 +16,5 @@ plotly-express
 kaleido
 psutil
 humanize
-pymysql
+PyMySQL
 pandas

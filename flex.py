@@ -13,6 +13,8 @@ from operator import itemgetter
 import datetime
 from pymysql.cursors import DictCursor
 import plotly.graph_objects as go
+from pymysql.constants import CLIENT
+
 
 
 cfg = config.cfg()
@@ -49,14 +51,14 @@ def progression(modality):
             #     flex += 1
             #     inc = 0
             flex = floor(day * 0.5)
-            print(f'{i}: {flex}')
+            # print(f'{i}: {flex}')
         elif modality == 'nanica':
             inc += 1
             if inc == 7:
                 flex += 2
                 inc = 0
             # flex = floor(day * 0.5)
-            print(f'{i}: {flex}')
+            # print(f'{i}: {flex}')
 
         prog.append({'username': 'progression', 'flex': flex, 'date': i})
     return prog
@@ -79,7 +81,8 @@ def db_connect():
             passwd=cfg.get('flex_db_password'),
             db=cfg.get('flex_db'),
             connect_timeout=5,
-            conv=conv
+            conv=conv,
+            client_flag=CLIENT.MULTI_STATEMENTS
         )
 
         return conn
@@ -121,6 +124,29 @@ def get_flex_day(user):
     try:
         with conn.cursor(cursor=DictCursor) as cursor:
             rows = cursor.execute(query, user)
+            if rows:
+                result = cursor.fetchall()
+            else:
+                return {}
+    except Exception as e:
+        logger.error(f'Request does not exist: {e}')
+        pass
+    else:
+        return result
+
+
+def get_flex_day_split(user):
+    conn = db_connect()
+    query = '''
+    select u.username, flex_done AS flex, date
+    from CHPX_contributions c
+    join CHPX_users u on c.ID_user = u.ID_user
+    where u.username=%s;
+    '''
+    try:
+        with conn.cursor(cursor=DictCursor) as cursor:
+            rows = cursor.execute(query, user)
+
             if rows:
                 result = cursor.fetchall()
             else:
@@ -258,6 +284,35 @@ def generate_flex_graph(user):
     fig.write_image(f'{user}.png', width=1200, height=675)
 
 
+def generate_flex_graph_split(user):
+    modality = get_modality(user)
+    prog = progression(modality)
+    flex = get_flex_day_split(user)
+    flex = increase_sentada(flex)
+    # flex.extend(prog)
+    prog_df = pd.read_json(json.dumps(prog))
+    new_flex = add_empty_dates(flex)
+    df = pd.read_json(json.dumps(new_flex))
+    total = df['flex'].sum()
+    df['set'] = df['set'].astype('Int64').astype('str')
+    fig = px.bar(
+        df,
+        x='date',
+        y='flex',
+        color='set',
+        title=f'{user}: {total} flex',
+        text='flex',
+        color_discrete_sequence=px.colors.qualitative.Bold
+    )
+    fig.add_trace(
+        go.Scatter(
+        x=prog_df['date'],
+        y=prog_df['flex'],
+        name='daily expected'
+    ))
+    fig.show()
+    # fig.write_image(f'{user}.png', width=1200, height=675)
+
 def generate_flex_graph_all():
     flex = get_flex_day_all()
     new_flex = add_empty_dates(flex)
@@ -332,6 +387,27 @@ def send_nanica(update, context):
     context.bot.send_photo(chat_id=update.message.chat_id, photo=open('nanica.png', 'rb'))
 
 
+def increase_sentada(result):
+    data = result
+    seen = list()
+    new_data = list()
+    sentada = int(0)
+    for i in data:
+        if i['date'] in seen:
+            sentada += 1
+            i['set'] = sentada
+        else:
+            sentada = 1
+            i['set'] = sentada
+            seen.append(i['date'])
+        new_data.append(i)
+    return new_data
+
+
+
+
+
+
 def flex_menu(update, context):
     if update.message.text.startswith('/flex'):
         search = update.message.text.split('/beer ')[1]
@@ -353,3 +429,11 @@ def flex_menu(update, context):
 # generate_flex_graph('lalo')
 # generate_prata_standings()
 # generate_standings('nanica')
+# a = get_flex_day_split('bruno')
+# for i in a:
+#     print(i)
+# print('================')
+# b = increase_sentada(a)
+# for i in b:
+#     print(i)
+generate_flex_graph_split('lalo')

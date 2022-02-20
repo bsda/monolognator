@@ -141,7 +141,7 @@ def get_flex_day_split(user):
     select u.username, flex_done AS flex, date
     from CHPX_contributions c
     join CHPX_users u on c.ID_user = u.ID_user
-    where u.username=%s;
+    where lower(u.username)=lower(%s)
     '''
     try:
         with conn.cursor(cursor=DictCursor) as cursor:
@@ -436,4 +436,4 @@ def flex_menu(update, context):
 # b = increase_sentada(a)
 # for i in b:
 #     print(i)
-generate_flex_graph_split('lalo')
+generate_flex_graph_split('Glauco')

@@ -373,7 +373,7 @@ def send_graph(update, context):
         context.bot.send_photo(chat_id=update.message.chat_id, photo=open('all.png', 'rb'))
     else:
         user = update.message.text.split('/flex ')[1]
-        generate_flex_graph(user)
+        generate_flex_graph_split(user)
         context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'{user}.png', 'rb'))
 
 

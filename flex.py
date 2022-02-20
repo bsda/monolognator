@@ -310,8 +310,8 @@ def generate_flex_graph_split(user):
         y=prog_df['flex'],
         name='daily expected'
     ))
-    fig.show()
-    # fig.write_image(f'{user}.png', width=1200, height=675)
+    # fig.show()
+    fig.write_image(f'{user}.png', width=1200, height=675)
 
 def generate_flex_graph_all():
     flex = get_flex_day_all()
@@ -325,7 +325,7 @@ def generate_flex_graph_all():
         color='username',
         title=f'{total} flex',
     )
-    fig.show()
+    # fig.show()
     fig.write_image('all.png', width=1200, height=675)
 
 
@@ -354,7 +354,7 @@ def generate_standings(modality):
                   xref='x',
                   yref='y',
                   name='expected')
-    fig.show()
+    # fig.show()
     fig.write_image(f'{modality}.png', width=1200, height=675)
 
 

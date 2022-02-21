@@ -227,7 +227,7 @@ def get_modality(user):
     query = '''
     select m.modality from CHPX_modalities m
     join CHPX_users u on u.ID_modality = m.ID_modality 
-    where u.username = %s
+    where lower(u.username) = lower(%s)
     '''
     try:
         with conn.cursor() as cursor:
@@ -436,4 +436,6 @@ def flex_menu(update, context):
 # b = increase_sentada(a)
 # for i in b:
 #     print(i)
-generate_flex_graph_split('Glauco')
+generate_flex_graph_split('caue')
+# a = progression('nanica')
+# print(a)

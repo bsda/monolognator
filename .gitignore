@@ -1,3 +1,5 @@
 /venv/
 /config.json
 /sa.json
+/*.png
+__pycache__

@@ -329,11 +329,46 @@ def generate_flex_graph_all():
     fig.write_image('all.png', width=1200, height=675)
 
 
+def add_sum_line(fig, sum_, flex):
+    fig.add_shape(type='line',
+                  x0=-1,
+                  y0=sum_,
+                  x1=len(flex),
+                  y1=sum_,
+                  line=dict(color='Red', dash='dot', width=2),
+                  xref='x',
+                  yref='y',
+                  name='expected')
+
+
+def generate_combined_standings(modality):
+    sum_list = [sum([i['flex'] for i in progression(banana)]) for banana in ['nanica', 'prata']]
+    flex = sorted(get_flex_sum('nanica')+get_flex_sum('prata'), key=lambda x: x['flex'])
+    df = pd.read_json(json.dumps(flex))
+    total = df['flex'].sum()
+    fig = px.bar(
+        df,
+        x='username',
+        y='flex',
+        color='username',
+        title=f'{modality} Standings',
+        text='flex'
+    )
+    for sum_ in sum_list:
+        add_sum_line(fig, sum_, flex)
+    # fig.show()
+    fig.write_image(f'{modality}.png', width=1200, height=675)
+
+
 def generate_standings(modality):
-    dates = progression(modality)
-    sum = 0
+    if modality in ['nanicaprata', 'pratananica']:
+        generate_combined_standings(modality)
+        return
+    else:
+        dates = progression(modality)
+    sum_ = 0
     for i in dates:
-        sum += i['flex']
+        sum_ += i['flex']
     flex = get_flex_sum(modality)
     df = pd.read_json(json.dumps(flex))
     total = df['flex'].sum()
@@ -345,15 +380,7 @@ def generate_standings(modality):
         title=f'{modality} Standings',
         text='flex'
     )
-    fig.add_shape(type='line',
-                  x0=-1,
-                  y0=sum,
-                  x1=len(flex),
-                  y1=sum,
-                  line=dict(color='Red', dash='dot', width=2),
-                  xref='x',
-                  yref='y',
-                  name='expected')
+    add_sum_line(fig, sum_, flex)
     # fig.show()
     fig.write_image(f'{modality}.png', width=1200, height=675)
 
@@ -373,18 +400,24 @@ def send_graph(update, context):
         context.bot.send_photo(chat_id=update.message.chat_id, photo=open('all.png', 'rb'))
     else:
         user = update.message.text.split('/flex ')[1]
-        generate_flex_graph_split(user)
-        context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'{user}.png', 'rb'))
+        if user in ['nanica', 'prata', 'nanicaprata', 'pratananica']:
+            send_standings(update, context, user)
+        else:
+            generate_flex_graph_split(user)
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'{user}.png', 'rb'))
+
+
+def send_standings(update, context, banana):
+    generate_standings(banana)
+    context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'{banana}.png', 'rb'))
 
 
 def send_prata(update, context):
-    generate_standings('prata')
-    context.bot.send_photo(chat_id=update.message.chat_id, photo=open('prata.png', 'rb'))
+    send_standings(update, context, 'prata')
 
 
 def send_nanica(update, context):
-    generate_standings('nanica')
-    context.bot.send_photo(chat_id=update.message.chat_id, photo=open('nanica.png', 'rb'))
+    send_standings(update, context, 'nanica')
 
 
 def increase_sentada(result):
@@ -436,6 +469,6 @@ def flex_menu(update, context):
 # b = increase_sentada(a)
 # for i in b:
 #     print(i)
-generate_flex_graph_split('caue')
+# generate_flex_graph_split('caue')
 # a = progression('nanica')
 # print(a)

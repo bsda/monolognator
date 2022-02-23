@@ -460,10 +460,10 @@ def send_graph(update, context):
         if user in ['nanica', 'prata', 'nanicaprata', 'pratananica']:
             send_standings(update, context, user)
         elif user == 'accum':
-            generate_accum_graph(user)
+            generate_accum_graph()
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'accum.png', 'rb'))
         elif user == 'f1graph':
-            generate_f1_graph(user)
+            generate_f1_graph()
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'f1graph.png', 'rb'))
         else:
             generate_flex_graph_split(user)

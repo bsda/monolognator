@@ -352,7 +352,8 @@ def generate_combined_standings(modality):
         y='flex',
         color='username',
         title=f'{modality} Standings',
-        text='flex'
+        text='flex',
+        color_discrete_sequence=px.colors.qualitative.Alphabet
     )
     for sum_ in sum_list:
         add_sum_line(fig, sum_, flex)
@@ -389,7 +390,7 @@ def get_accum_flex():
     flex = get_flex_day_all()
     user_list = list({item['username'] for item in flex}) # get_users()
     date_list = sorted(list({item['date'] for item in flex})) # all_dates()
-    user_color_table = px.colors.qualitative.Plotly
+    user_color_table = px.colors.qualitative.Alphabet
 
     flex_dict = dict()
     for user in user_list:
@@ -420,7 +421,8 @@ def generate_accum_graph():
     fig = go.Figure()
     user_dict = get_accum_flex()
     for user in sorted(user_dict.keys(), key=lambda x: user_dict[x]['accum'][-1])[::-1]:
-        fig.add_trace(go.Scatter(x=user_dict[user]['x'], y=user_dict[user]['y'], mode='lines', name=user))
+        fig.add_trace(go.Scatter(x=user_dict[user]['x'], y=user_dict[user]['y'],
+            mode='lines', name=user, line=dict(color=user_dict[user]['color'])))
     fig.write_image('accum.png', width=1200, height=675)
 
 
@@ -432,13 +434,12 @@ def generate_f1_graph():
     for date_index, date in enumerate(date_list):
         rank_list = sorted([[user_dict[user]['accum'][date_index], user] for user in user_list])
         ranked_user_list = [user for accum, user in rank_list]
-        # print(date, user, date_index, user_dict[user]['accum'][date_index], rank_list, ranked_user_list)
         for user in user_list:
             rank = ranked_user_list.index(user)
             user_dict[user]['y'][date_index] = rank
     for user in sorted(user_dict.keys(), key=lambda x: user_dict[x]['accum'][-1])[::-1]:
-        # print(user, user_dict[user]['y'])
-        fig.add_trace(go.Scatter(x=user_dict[user]['x'], y=user_dict[user]['y'], mode='lines', name=user))
+        fig.add_trace(go.Scatter(x=user_dict[user]['x'], y=user_dict[user]['y'],
+            mode='lines', name=user, line=dict(color=user_dict[user]['color'])))
     fig.write_image('f1graph.png', width=1200, height=675)
 
 

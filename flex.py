@@ -632,7 +632,7 @@ def send_graph(update, context):
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open('hourgraph.png', 'rb'))
         else:
             if len(user_list) > 1:
-                image_name = generate_flex_graphs(user_list[1:])
+                image_name = generate_flex_graphs(user_list)
                 context.bot.send_photo(chat_id=update.message.chat_id, photo=open(image_name, 'rb'))
             else:
                 generate_flex_graph_split(user)

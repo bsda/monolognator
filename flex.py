@@ -245,6 +245,26 @@ def get_modality(user):
         return result
 
 
+def get_flex_hours_all():
+    conn = db_connect()
+    query = '''
+    select u.username, CAST(sum(flex_done) AS SIGNED) flex, date, hour(datetime) AS hour from CHPX_contributions c
+    join CHPX_users u on c.ID_user = u.ID_user
+    group by hour, username, date
+    '''
+    try:
+        with conn.cursor(cursor=DictCursor) as cursor:
+            rows = cursor.execute(query)
+            if rows:
+                result = cursor.fetchall()
+            else:
+                return {}
+    except Exception as e:
+        logger.error(f'Request does not exist: {e}')
+        pass
+    else:
+        return result
+
 
 def add_empty_dates(derp):
     derp = derp
@@ -255,8 +275,6 @@ def add_empty_dates(derp):
           derp.append({'username': user, 'flex': 0, 'date': d, })
     derp = sorted(derp, key=itemgetter('date'))
     return derp
-
-
 
 
 def generate_flex_graph(user):
@@ -349,6 +367,7 @@ def generate_flex_graph_split(user):
     ))
     # fig.show()
     fig.write_image(f'{user}.png', width=1200, height=675)
+
 
 def generate_flex_graph_all():
     flex = get_flex_day_all()
@@ -477,13 +496,15 @@ def get_accum_flex(include_zero=True):
     return user_dict, date_to_user_dict
 
 
-def generate_accum_graph():
+def generate_accum_graph(user_filter_list=None):
     fig = go.Figure()
     user_dict, date_to_user_dict = get_accum_flex()
     for user in sorted(user_dict.keys(), key=lambda x: user_dict[x]['accum'][-1])[::-1]:
-        fig.add_trace(go.Scatter(x=user_dict[user]['x'], y=user_dict[user]['y'],
-            mode='lines', name=user, line=dict(color=user_dict[user]['color'])))
+        if user_filter_list is None or (user_filter_list is not None and user in user_filter_list):
+            fig.add_trace(go.Scatter(x=user_dict[user]['x'][1:-1], y=user_dict[user]['y'][1:-1],
+                mode='lines', name=user, line=dict(color=user_dict[user]['color'])))
     fig.write_image('accum.png', width=1200, height=675)
+
 
 def get_rank_list(date, date_list, user_list, user_dict, date_to_user_dict):
     rank_list = []
@@ -493,7 +514,8 @@ def get_rank_list(date, date_list, user_list, user_dict, date_to_user_dict):
             rank_list.append([user_dict[user]['accum'][date_id], user_id, user])
     return rank_list
 
-def generate_accum100_graph():
+
+def generate_accum100_graph(user_filter_list=None):
     fig = go.Figure()
     user_dict, date_to_user_dict = get_accum_flex()
     last_day_rank_list = sorted([[user_dict[user]['accum'][-1], user] for user in user_dict.keys()])
@@ -503,22 +525,28 @@ def generate_accum100_graph():
         rank_list = get_rank_list(date, date_list, user_list, user_dict, date_to_user_dict)
         if len(rank_list) > 0:
             ranked_user_list = [user for accum, user_id, user in rank_list]
-            accum_max = max([accum for accum, user_id, user in rank_list])
+            if user_filter_list is None:
+                accum_max = max([accum for accum, user_id, user in rank_list])
+            else:
+                accum_max = max([accum for accum, user_id, user in rank_list if user in user_filter_list])
             for user in ranked_user_list:
                 date_id = user_dict[user]['x'].index(date)
                 user_dict[user]['y'][date_id] = float(user_dict[user]['accum'][date_id])/accum_max if accum_max > 0 else 0
     for accum, user in last_day_rank_list[::-1]:
-        # print(user, user_dict[user]['y'])
-        fig.add_trace(go.Scatter(x=user_dict[user]['x'][1:-1], y=user_dict[user]['y'][1:-1],
-            mode='lines', name=user, line=dict(color=user_dict[user]['color'])))
+        if user_filter_list is None or (user_filter_list is not None and user in user_filter_list):
+            fig.add_trace(go.Scatter(x=user_dict[user]['x'][1:-1], y=user_dict[user]['y'][1:-1],
+                mode='lines', name=user, line=dict(color=user_dict[user]['color'])))
     fig.write_image('accum100.png', width=1200, height=675)
 
 
-def generate_f1_graph():
+def generate_f1_graph(user_filter_list=None):
     fig = go.Figure()
     user_dict, date_to_user_dict = get_accum_flex(include_zero=True)
     last_day_rank_list = sorted([[user_dict[user]['accum'][-1], user] for user in user_dict.keys()])
-    user_list = [user for accum, user in last_day_rank_list]
+    if user_filter_list is None:
+        user_list = [user for accum, user in last_day_rank_list]
+    else:
+        user_list = [user for accum, user in last_day_rank_list if user in user_filter_list]
     date_list = user_dict[user_list[0]]['date_list']
     for date in date_list:
         rank_list = get_rank_list(date, date_list, user_list, user_dict, date_to_user_dict)
@@ -528,9 +556,38 @@ def generate_f1_graph():
                 date_id = user_dict[user]['x'].index(date)
                 user_dict[user]['y'][date_id] = rank
     for accum, user in last_day_rank_list[::-1]:
-        fig.add_trace(go.Scatter(x=user_dict[user]['x'][1:-1], y=user_dict[user]['y'][1:-1],
-            mode='lines', name=user, line=dict(color=user_dict[user]['color'])))
+        if user_filter_list is None or (user_filter_list is not None and user in user_filter_list):
+            fig.add_trace(go.Scatter(x=user_dict[user]['x'][1:-1], y=user_dict[user]['y'][1:-1],
+                mode='lines', name=user, line=dict(color=user_dict[user]['color'])))
     fig.write_image('f1graph.png', width=1200, height=675)
+
+
+def generate_hour_graph(user_filter_list=None):
+    fig = go.Figure()
+    flex = get_flex_hours_all()
+    user_list = list({item['username'] for item in flex}) # get_users()
+    date_list = sorted(list({item['date'] for item in flex})) # all_dates()
+    hour_list = sorted(list({item['hour'] for item in flex}))
+    hour_label_list = ['%02d:00'%hour for hour in hour_list][::-1]
+    z_list = [[0 for date in date_list] for hour in hour_list]
+    for item in flex:
+        if user_filter_list is None or (user_filter_list is not None and item['username'] in user_filter_list):
+            date_id = date_list.index(item['date'])
+            hour = 23-(item['hour']+5)%24 # Manual offset of reported hours!
+            z_list[hour][date_id] += item['flex']
+    # z_label_list = [[str(z_list[hour_id][date_id]) for date_id, date in enumerate(date_list)] for hour_id, hour in enumerate(hour_list)]
+    fig.add_trace(
+        go.Heatmap(
+        x=date_list,
+        y=hour_label_list,
+        z=z_list,
+        type='heatmap',
+        # text=z_label_list,
+        colorscale='Electric'
+        # Blackbody,Bluered,Blues,Cividis,Earth,Electric,Greens,Greys,Hot,Jet,Picnic,Portland,Rainbow,RdBu,Reds,Viridis,YlGnBu,YlOrRd
+    ))
+    fig.update_layout(title='Flex - Hour Heatmap - '+('All' if user_filter_list is None else ' '.join(user_filter_list)))
+    fig.write_image(f'hourgraph.png', width=1200, height=675)
 
 
 def send_percent_all(update, context):
@@ -548,10 +605,16 @@ def send_graph(update, context):
         context.bot.send_photo(chat_id=update.message.chat_id, photo=open('all.png', 'rb'))
     else:
         user = update.message.text.split('/flex ')[1]
+        if ' ' in user:
+            user_list = user.split(' ')
+            user = user_list[0]
         if user in ['nanica', 'prata', 'nanicaprata', 'pratananica']:
             send_standings(update, context, user)
         elif user == 'accum':
-            generate_accum_graph()
+            if len(user_list) > 1:
+                generate_accum_graph(user_list[1:])
+            else:
+                generate_accum_graph()
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'accum.png', 'rb'))
         elif user == 'accum100':
             generate_accum100_graph()
@@ -559,9 +622,15 @@ def send_graph(update, context):
         elif user == 'f1graph':
             generate_f1_graph()
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'f1graph.png', 'rb'))
+        elif user == 'hour':
+            if len(user_list) > 1:
+                generate_hour_graph(user_list[1:])
+            else:
+                generate_hour_graph()
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=open('hourgraph.png', 'rb'))
         else:
-            if ' ' in user:
-                image_name = generate_flex_graphs(user_list)
+            if len(user_list) > 1:
+                image_name = generate_flex_graphs(user_list[1:])
                 context.bot.send_photo(chat_id=update.message.chat_id, photo=open(image_name, 'rb'))
             else:
                 generate_flex_graph_split(user)

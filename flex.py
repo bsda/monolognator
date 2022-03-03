@@ -608,6 +608,8 @@ def send_graph(update, context):
         if ' ' in user:
             user_list = user.split(' ')
             user = user_list[0]
+        else:
+            user_list = [user]
         if user in ['nanica', 'prata', 'nanicaprata', 'pratananica']:
             send_standings(update, context, user)
         elif user == 'accum':

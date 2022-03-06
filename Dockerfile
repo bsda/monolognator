@@ -24,6 +24,7 @@ ADD movies.py /app
 ADD utils.py /app
 ADD vaccine.py /app
 ADD flex.py /app
+ADD legs.png /app
 #RUN apk update && apk add --no-cache openssl bash libstdc++ libc6-compat protobuf
 RUN apt update; apt install procps --assume-yes
 ENTRYPOINT [ "python3", "bot.py" ]

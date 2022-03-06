@@ -612,6 +612,9 @@ def send_graph(update, context):
             user_list = [user]
         if user in ['nanica', 'prata', 'nanicaprata', 'pratananica']:
             send_standings(update, context, user)
+        elif user == 'gui' or user == 'guicane':
+            context.bot.send_photo(chat_id=update.message.chat_id, caption='I only do legs', photo=open(f'legs.png', 'rb'))
+
         elif user == 'accum':
             if len(user_list) > 1:
                 generate_accum_graph(user_list[1:])
@@ -650,6 +653,9 @@ def send_prata(update, context):
 
 def send_nanica(update, context):
     send_standings(update, context, 'nanica')
+
+def send_pratananica(update, context):
+    send_standings(update, context, 'pratananica')
 
 
 def increase_sentada(result):

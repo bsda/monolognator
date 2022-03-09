@@ -137,6 +137,29 @@ def get_flex_day(user):
         return result
 
 
+def get_today_flex():
+    conn = db_connect()
+    query = '''
+    select u.username, CAST(sum(flex_done) AS SIGNED) flex from CHPX_contributions c
+    join CHPX_users u on c.ID_user = u.ID_user
+    where date = date(NOW())
+    group by username
+    order by flex asc
+    '''
+    try:
+        with conn.cursor(cursor=DictCursor) as cursor:
+            rows = cursor.execute(query)
+            if rows:
+                result = cursor.fetchall()
+            else:
+                return {}
+    except Exception as e:
+        logger.error(f'Request does not exist: {e}')
+        pass
+    else:
+        return result
+
+
 def get_flex_day_split(user):
     conn = db_connect()
     query = '''
@@ -438,10 +461,13 @@ def generate_standings(modality):
         y='flex',
         color='username',
         title=f'{modality} Standings',
-        text='flex'
+        text_auto=True
+
+
     )
+    fig.update_layout(legend={'traceorder': 'reversed'})
     add_sum_line(fig, sum_, flex)
-    # fig.show()
+    fig.show()
     fig.write_image(f'{modality}.png', width=1200, height=675)
 
 
@@ -608,6 +634,29 @@ def generate_hour_graph(user_filter_list=None):
     fig.write_image(f'hourgraph.png', width=1200, height=675)
 
 
+def generate_today():
+    flex = get_today_flex()
+    df = pd.read_json(json.dumps(flex))
+    fig = px.bar(
+        df,
+        x='username',
+        y='flex',
+        color='username',
+        text='flex',
+        title=f'{datetime.date.today()} flexes',
+        color_discrete_sequence=px.colors.qualitative.Bold
+
+    )
+    fig.update_layout(
+        font=dict(
+            family="Courier New, monospace",
+            size=18,
+            color="Black"))
+    fig.show()
+    fig.write_image('today.png', width=1200, height=675)
+
+
+
 def send_percent_all(update, context):
     results =  get_percent_all()
 
@@ -632,7 +681,9 @@ def send_graph(update, context):
             send_standings(update, context, user)
         elif user == 'gui' or user == 'guicane':
             context.bot.send_photo(chat_id=update.message.chat_id, caption='I only do legs', photo=open(f'legs.png', 'rb'))
-
+        elif user == 'today':
+            generate_today()
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'today.png', 'rb'))
         elif user == 'accum':
             if len(user_list) > 1:
                 generate_accum_graph(user_list[1:])
@@ -734,3 +785,5 @@ def flex_menu(update, context):
 # generate_flex_graph_split('caue')
 # a = progression('nanica')
 # print(a)
+generate_today()
+# generate_standings('prata')

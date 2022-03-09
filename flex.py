@@ -785,5 +785,5 @@ def flex_menu(update, context):
 # generate_flex_graph_split('caue')
 # a = progression('nanica')
 # print(a)
-generate_today()
+# generate_today()
 # generate_standings('prata')

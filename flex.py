@@ -137,12 +137,18 @@ def get_flex_day(user):
         return result
 
 
-def get_today_flex():
+def get_period_flex(period):
     conn = db_connect()
-    query = '''
+    if period == 'today':
+        where = 'date = curdate()'
+    elif period == 'week':
+        where = 'YEARWEEK(date, 1) = YEARWEEK(CURDATE(), 1)'
+    elif period == 'month':
+        where = 'MONTH(date) = MONTH(CURDATE())'
+    query = f'''
     select u.username, CAST(sum(flex_done) AS SIGNED) flex from CHPX_contributions c
     join CHPX_users u on c.ID_user = u.ID_user
-    where date = date(NOW())
+    where {where}
     group by username
     order by flex asc
     '''
@@ -634,26 +640,34 @@ def generate_hour_graph(user_filter_list=None):
     fig.write_image(f'hourgraph.png', width=1200, height=675)
 
 
-def generate_today():
-    flex = get_today_flex()
+def generate_period(period):
+    flex = get_period_flex(period)
     df = pd.read_json(json.dumps(flex))
+    if period == 'day':
+        title = datetime.date.today()
+    elif period == 'week':
+        title = 'Flexes na semana'
+    elif period == 'month':
+        title = 'Flexes no mes'
     fig = px.bar(
         df,
         x='username',
         y='flex',
         color='username',
         text='flex',
-        title=f'{datetime.date.today()} flexes',
+        title=title,
         color_discrete_sequence=px.colors.qualitative.Bold
 
     )
     fig.update_layout(
+        legend={'traceorder': 'reversed'},
         font=dict(
             family="Courier New, monospace",
             size=18,
             color="Black"))
+
     fig.show()
-    fig.write_image('today.png', width=1200, height=675)
+    fig.write_image('period.png', width=1200, height=675)
 
 
 
@@ -681,9 +695,9 @@ def send_graph(update, context):
             send_standings(update, context, user)
         elif user == 'gui' or user == 'guicane':
             context.bot.send_photo(chat_id=update.message.chat_id, caption='I only do legs', photo=open(f'legs.png', 'rb'))
-        elif user == 'today':
-            generate_today()
-            context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'today.png', 'rb'))
+        elif user == 'today' or user == 'week' or user == 'month':
+            generate_period(user)
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'period.png', 'rb'))
         elif user == 'accum':
             if len(user_list) > 1:
                 generate_accum_graph(user_list[1:])
@@ -785,5 +799,5 @@ def flex_menu(update, context):
 # generate_flex_graph_split('caue')
 # a = progression('nanica')
 # print(a)
-# generate_today()
+generate_period('month')
 # generate_standings('prata')

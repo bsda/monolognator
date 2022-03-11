@@ -139,11 +139,11 @@ def get_flex_day(user):
 
 def get_period_flex(period):
     conn = db_connect()
-    if period == 'today':
+    if period in ['day', 'today', 'hoje']:
         where = 'date = curdate()'
-    elif period == 'week':
+    elif period in ['week', 'semana']:
         where = 'YEARWEEK(date, 1) = YEARWEEK(CURDATE(), 1)'
-    elif period == 'month':
+    elif period in ['month', 'mes']:
         where = 'MONTH(date) = MONTH(CURDATE())'
     query = f'''
     select u.username, CAST(sum(flex_done) AS SIGNED) flex from CHPX_contributions c
@@ -643,11 +643,11 @@ def generate_hour_graph(user_filter_list=None):
 def generate_period(period):
     flex = get_period_flex(period)
     df = pd.read_json(json.dumps(flex))
-    if period == 'day':
-        title = datetime.date.today()
-    elif period == 'week':
+    if period in ['day', 'today', 'hoje']:
+        title = f'Flexes on {datetime.date.today()}'
+    elif period in ['week', 'semana']:
         title = 'Flexes na semana'
-    elif period == 'month':
+    elif period in ['month', 'mes']:
         title = 'Flexes no mes'
     fig = px.bar(
         df,
@@ -663,10 +663,10 @@ def generate_period(period):
         legend={'traceorder': 'reversed'},
         font=dict(
             family="Courier New, monospace",
-            size=18,
+            size=16,
             color="Black"))
 
-    fig.show()
+    # fig.show()
     fig.write_image('period.png', width=1200, height=675)
 
 
@@ -695,7 +695,7 @@ def send_graph(update, context):
             send_standings(update, context, user)
         elif user == 'gui' or user == 'guicane':
             context.bot.send_photo(chat_id=update.message.chat_id, caption='I only do legs', photo=open(f'legs.png', 'rb'))
-        elif user == 'today' or user == 'week' or user == 'month':
+        elif user in ['today', 'day', 'hoje', 'week', 'semana', 'month', 'mes']:
             generate_period(user)
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'period.png', 'rb'))
         elif user == 'accum':

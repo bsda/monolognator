@@ -141,6 +141,8 @@ def get_period_flex(period):
     conn = db_connect()
     if period in ['day', 'today', 'hoje']:
         where = 'date = curdate()'
+    elif period in ['yesterday', 'ontem']:
+        where = 'date = curdate()-1'
     elif period in ['week', 'semana']:
         where = 'YEARWEEK(date, 1) = YEARWEEK(CURDATE(), 1)'
     elif period in ['month', 'mes']:
@@ -645,6 +647,8 @@ def generate_period(period):
     df = pd.read_json(json.dumps(flex))
     if period in ['day', 'today', 'hoje']:
         title = f'Flexes on {datetime.date.today()}'
+    elif period in ['yesterday', 'ontem']:
+        title = f'Flexes on {datetime.date.today()-datetime.timedelta(days=1)}'
     elif period in ['week', 'semana']:
         title = 'Flexes na semana'
     elif period in ['month', 'mes']:

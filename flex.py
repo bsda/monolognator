@@ -683,7 +683,6 @@ def generate_period(period, user_filter_list=None):
     fig.write_image('period.png', width=1200, height=675)
 
 
-
 def send_percent_all(update, context):
     results =  get_percent_all()
 
@@ -691,6 +690,23 @@ def send_percent_all(update, context):
     for i in results:
         text += f'{i["username"]}: {i["pct"]}%\n'
     context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
+
+
+def generate_help_message():
+    text = '/flex - gráfico de barras coloridinhas de todos\n'
+    text += '/flex user1 [[user2] [user3] ..] - gráfico de barras individual(is)\n'
+    text += '/flex [nanica|prata|nanicaprata|pratananica] - acumulado total de índios em bananas\n'
+    text += '/flex accum [[user1] [user2] ..] - curva acumulada, geral ou individual(is)\n'
+    text += '/flex accum100 [[user1] [user2] ..] - curva acumulada, percentual do máximo diário, geral ou individual(is)\n'
+    text += '/flex f1graph [[user1] [user2] ..] - plot do ranking, geral ou individual(is)\n'
+    text += '/flex hour [[user1] [user2] ..] - heatmap do horário das flexões, geral ou individual(is)\n'
+    text += '/flex [today|day|hoje] [[user1] [user2] ..] - gráfico de barras de hoje\n'
+    text += '/flex [yesterday|ontem] [[user1] [user2] ..] - gráfico de barras de ontem\n'
+    text += '/flex [daybeforeyesterday|anteontem] [[user1] [user2] ..] - gráfico de barras de anteontem\n'
+    text += '/flex [daybeforedaybeforeyesterday|anteanteontem] [[user1] [user2] ..] - gráfico de barras de anteanteontem\n'
+    text += '/flex [week|semana] [[user1] [user2] ..] - gráfico de barras da semana\n'
+    text += '/flex [month|mes] [[user1] [user2] ..] - gráfico de barras do mês\n'
+    return text
 
 
 def send_graph(update, context):
@@ -727,19 +743,7 @@ def send_graph(update, context):
             generate_hour_graph(user_list)
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open('hourgraph.png', 'rb'))
         elif user == 'help':
-            text = '/flex - gráfico de barras coloridinhas de todos\n'
-            text += '/flex user1 [[user2] [user3] ..] - gráfico de barras individual(is)\n'
-            text += '/flex [nanica|prata|nanicaprata|pratananica] - acumulado total de índios em bananas\n'
-            text += '/flex accum [[user1] [user2] ..] - curva acumulada, geral ou individual(is)\n'
-            text += '/flex accum100 [[user1] [user2] ..] - curva acumulada, percentual do máximo diário, geral ou individual(is)\n'
-            text += '/flex f1graph [[user1] [user2] ..] - plot do ranking, geral ou individual(is)\n'
-            text += '/flex hour [[user1] [user2] ..] - heatmap do horário das flexões, geral ou individual(is)\n'
-            text += '/flex [today|day|hoje] [[user1] [user2] ..] - gráfico de barras de hoje\n'
-            text += '/flex [yesterday|ontem] [[user1] [user2] ..] - gráfico de barras de ontem\n'
-            text += '/flex [daybeforeyesterday|anteontem] [[user1] [user2] ..] - gráfico de barras de anteontem\n'
-            text += '/flex [daybeforedaybeforeyesterday|anteanteontem] [[user1] [user2] ..] - gráfico de barras de anteanteontem\n'
-            text += '/flex [week|semana] [[user1] [user2] ..] - gráfico de barras da semana\n'
-            text += '/flex [month|mes] [[user1] [user2] ..] - gráfico de barras do mês\n'
+            text = generate_help_message()
             context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
         else:
             if user_list is not None:

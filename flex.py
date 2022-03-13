@@ -143,6 +143,10 @@ def get_period_flex(period):
         where = 'date = curdate()'
     elif period in ['yesterday', 'ontem']:
         where = 'date = curdate()-1'
+    elif period in ['daybeforeyesterday', 'thedaybeforeyesterday', 'anteontem']:
+        where = 'date = curdate()-2'
+    elif period in ['daybeforedaybeforeyesterday', 'thedaybeforethedaybeforeyesterday', 'anteanteontem']:
+        where = 'date = curdate()-3'
     elif period in ['week', 'semana']:
         where = 'YEARWEEK(date, 1) = YEARWEEK(CURDATE(), 1)'
     elif period in ['month', 'mes']:
@@ -642,13 +646,19 @@ def generate_hour_graph(user_filter_list=None):
     fig.write_image(f'hourgraph.png', width=1200, height=675)
 
 
-def generate_period(period):
+def generate_period(period, user_filter_list=None):
     flex = get_period_flex(period)
+    if user_filter_list is not None:
+        flex = [item for item in flex if item['username'].lower() in user_filter_list]
     df = pd.read_json(json.dumps(flex))
     if period in ['day', 'today', 'hoje']:
         title = f'Flexes on {datetime.date.today()}'
     elif period in ['yesterday', 'ontem']:
         title = f'Flexes on {datetime.date.today()-datetime.timedelta(days=1)}'
+    elif period in ['daybeforeyesterday', 'thedaybeforeyesterday', 'anteontem']:
+        title = f'Flexes on {datetime.date.today()-datetime.timedelta(days=2)}'
+    elif period in ['daybeforedaybeforeyesterday', 'thedaybeforethedaybeforeyesterday', 'anteanteontem']:
+        title = f'Flexes on {datetime.date.today()-datetime.timedelta(days=3)}'
     elif period in ['week', 'semana']:
         title = 'Flexes na semana'
     elif period in ['month', 'mes']:
@@ -661,7 +671,6 @@ def generate_period(period):
         text='flex',
         title=title,
         color_discrete_sequence=px.colors.qualitative.Bold
-
     )
     fig.update_layout(
         legend={'traceorder': 'reversed'},
@@ -694,40 +703,46 @@ def send_graph(update, context):
             user_list = lower_list(user.split(' '))
             user = user_list[0]
         else:
-            user_list = [user.lower()]
+            user_list = None
         if user in ['nanica', 'prata', 'nanicaprata', 'pratananica']:
             send_standings(update, context, user)
         elif user == 'gui' or user == 'guicane':
             context.bot.send_photo(chat_id=update.message.chat_id, caption='I only do legs', photo=open(f'legs.png', 'rb'))
-        elif user in ['today', 'day', 'hoje', 'week', 'semana', 'month', 'mes']:
-            generate_period(user)
+        elif user in ['today', 'day', 'hoje', 'yesterday', 'ontem',
+                        'daybeforeyesterday', 'thedaybeforeyesterday', 'anteontem',
+                        'daybeforedaybeforeyesterday', 'thedaybeforethedaybeforeyesterday', 'anteanteontem',
+                        'week', 'semana', 'month', 'mes']:
+            generate_period(user, user_list)
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'period.png', 'rb'))
         elif user == 'accum':
-            if len(user_list) > 1:
-                generate_accum_graph(user_list[1:])
-            else:
-                generate_accum_graph()
+            generate_accum_graph(user_list)
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'accum.png', 'rb'))
         elif user == 'accum100':
-            if len(user_list) > 1:
-                generate_accum100_graph(user_list[1:])
-            else:
-                generate_accum100_graph()
+            generate_accum100_graph(user_list)
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'accum100.png', 'rb'))
         elif user == 'f1graph':
-            if len(user_list) > 1:
-                generate_f1_graph(user_list[1:])
-            else:
-                generate_f1_graph()
+            generate_f1_graph(user_list)
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open(f'f1graph.png', 'rb'))
         elif user == 'hour':
-            if len(user_list) > 1:
-                generate_hour_graph(user_list[1:])
-            else:
-                generate_hour_graph()
+            generate_hour_graph(user_list)
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open('hourgraph.png', 'rb'))
+        elif user == 'help':
+            text = '/flex - gráfico de barras coloridinhas de todos\n'
+            text += '/flex user1 [[user2] [user3] ..] - gráfico de barras individual(is)\n'
+            text += '/flex [nanica|prata|nanicaprata|pratananica] - acumulado total de índios em bananas\n'
+            text += '/flex accum [[user1] [user2] ..] - curva acumulada, geral ou individual(is)\n'
+            text += '/flex accum100 [[user1] [user2] ..] - curva acumulada, percentual do máximo diário, geral ou individual(is)\n'
+            text += '/flex f1graph [[user1] [user2] ..] - plot do ranking, geral ou individual(is)\n'
+            text += '/flex hour [[user1] [user2] ..] - heatmap do horário das flexões, geral ou individual(is)\n'
+            text += '/flex [today|day|hoje] [[user1] [user2] ..] - gráfico de barras de hoje\n'
+            text += '/flex [yesterday|ontem] [[user1] [user2] ..] - gráfico de barras de ontem\n'
+            text += '/flex [daybeforeyesterday|anteontem] [[user1] [user2] ..] - gráfico de barras de anteontem\n'
+            text += '/flex [daybeforedaybeforeyesterday|anteanteontem] [[user1] [user2] ..] - gráfico de barras de anteanteontem\n'
+            text += '/flex [week|semana] [[user1] [user2] ..] - gráfico de barras da semana\n'
+            text += '/flex [month|mes] [[user1] [user2] ..] - gráfico de barras do mês\n'
+            context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
         else:
-            if len(user_list) > 1:
+            if user_list is not None:
                 image_name = generate_flex_graphs(user_list)
                 context.bot.send_photo(chat_id=update.message.chat_id, photo=open(image_name, 'rb'))
             else:
@@ -803,5 +818,5 @@ def flex_menu(update, context):
 # generate_flex_graph_split('caue')
 # a = progression('nanica')
 # print(a)
-generate_period('month')
+# generate_period('month')
 # generate_standings('prata')

@@ -537,6 +537,68 @@ def get_accum_flex(include_zero=True):
     return user_dict, date_to_user_dict
 
 
+def get_top_day_flex(top_count):
+    flex = get_flex_day_all()
+    user_list = list({item['username'] for item in flex}) # get_users()
+    date_list = sorted({item['date'] for item in flex}) # all_dates()
+
+    half_user_len = int(1+len(user_list)/2)
+    user_color_table = [hsv_to_hex(float(i)/half_user_len, 1.0, 1.0) for i in range(half_user_len)]
+    user_color_table += [hsv_to_hex(float(i+0.5)/half_user_len, 0.5, 1.0) for i in range(half_user_len)]
+    random.seed(1234)
+    random.shuffle(user_color_table)
+
+    flex_dict = dict()
+    for user in user_list:
+        user_flex = get_flex_day(user)
+        if user_flex is not None:
+            flex_dict[user] = dict([(item['date'], item['flex']) for item in user_flex])
+            for date in date_list:
+                if not date in flex_dict[user]:
+                    flex_dict[user][date] = 0
+        else:
+            flex_dict[user] = dict([(date, 0) for date in date_list])
+    
+    fig = go.Figure()
+
+    fig_data = []
+    for i in range(top_count):
+        flex = []
+        data = {'date':[], 'flex':[], 'username':[], 'color':[]}
+        date_to_flex_user_dict = dict()
+        for date_id, date in enumerate(date_list):
+            date_to_flex_user_dict[date] = []
+            for user_id, user in enumerate(user_list):
+                date_to_flex_user_dict[date].append([flex_dict[user][date], user])
+            date_to_flex_user_dict[date] = sorted(date_to_flex_user_dict[date])[::-1][i:i+1]
+            for item in date_to_flex_user_dict[date]:
+                flex.append({'flex': item[0], 'username': item[1], 'date': date})
+                data['date'].append(date)
+                data['flex'].append(item[0])
+                data['username'].append(item[1])
+                user_id = user_list.index(item[1])
+                data['color'].append(user_color_table[user_id%len(user_color_table)])
+        df = pd.read_json(json.dumps(flex))
+        fig.add_trace(
+            go.Bar(
+                name='',
+                x=data['date'],
+                y=data['flex'],
+                marker={'color': data['color']},
+                text=data['username'],
+                offsetgroup=i,
+                showlegend=False
+            ))
+    
+    for user_id, user in enumerate(user_list):
+        fig.add_trace(go.Bar(name=user, x=[date], y=[0], marker={'color': [user_color_table[user_id%len(user_color_table)]]}))
+
+    fig.update_layout(title=f'Flex - Top {top_count}', bargap=0.40)
+
+    # fig.show()
+    fig.write_image('topday.png', width=2400, height=1350) #, width=1200, height=675) #, width=4800, height=2700) #
+
+
 def lower_list(list_upper):
     if list_upper is None:
         return list_upper
@@ -706,6 +768,7 @@ def generate_help_message():
     text += '/flex [daybeforedaybeforeyesterday|anteanteontem] [[user1] [user2] ..] - gráfico de barras de anteanteontem\n'
     text += '/flex [week|semana] [[user1] [user2] ..] - gráfico de barras da semana\n'
     text += '/flex [month|mes] [[user1] [user2] ..] - gráfico de barras do mês\n'
+    text += '/flex top[1|2|3]day - gráfico dos top N de cada dia\n'
     return text
 
 
@@ -742,6 +805,15 @@ def send_graph(update, context):
         elif user == 'hour':
             generate_hour_graph(user_list)
             context.bot.send_photo(chat_id=update.message.chat_id, photo=open('hourgraph.png', 'rb'))
+        elif user == 'top1day':
+            get_top_day_flex(1)
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=open('topday.png', 'rb'))
+        elif user == 'top2day':
+            get_top_day_flex(2)
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=open('topday.png', 'rb'))
+        elif user == 'top3day':
+            get_top_day_flex(3)
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=open('topday.png', 'rb'))
         elif user == 'help':
             text = generate_help_message()
             context.bot.send_message(chat_id=update.message.chat_id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)

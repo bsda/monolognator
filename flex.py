@@ -587,17 +587,19 @@ def get_accum_flex2(include_zero=True):
         user_dict[user] = dict()
         user_dict[user]['color'] = user_color_table[user_id%len(user_color_table)]
         user_dict[user]['date_list'] = date_list
-        user_dict[user]['accum'] = []
         user_dict[user]['x'] = []
         user_dict[user]['y'] = []
+        user_dict[user]['accum'] = []
+        user_dict[user]['flex'] = []
         for date_id, date in enumerate(date_list):
             last_flex = user_dict[user]['accum'][-1] if len(user_dict[user]['accum']) > 0 else 0
             accum = last_flex+flex_dict[user][date]
             if accum > 0:
-                if last_flex == 0 and date_id > 0 and include_zero:
+                if False: # last_flex == 0 and date_id > 0 and include_zero:
                     user_dict[user]['x'].append(date_list[date_id-1])
                     user_dict[user]['y'].append(0)
                     user_dict[user]['accum'].append(0)
+                    user_dict[user]['flex'].append(flex_dict[user][date_list[date_id-1]])
                     if date_list[date_id-1] in date_to_user_dict:
                         date_to_user_dict[date_list[date_id-1]].append(user)
                     else:
@@ -605,6 +607,16 @@ def get_accum_flex2(include_zero=True):
                 user_dict[user]['x'].append(date)
                 user_dict[user]['y'].append(accum)
                 user_dict[user]['accum'].append(accum)
+                user_dict[user]['flex'].append(flex_dict[user][date])
+                if date in date_to_user_dict:
+                    date_to_user_dict[date].append(user)
+                else:
+                    date_to_user_dict[date] = [user]
+            elif include_zero:
+                user_dict[user]['x'].append(date)
+                user_dict[user]['y'].append(accum)
+                user_dict[user]['accum'].append(accum)
+                user_dict[user]['flex'].append(flex_dict[user][date])
                 if date in date_to_user_dict:
                     date_to_user_dict[date].append(user)
                 else:
@@ -701,10 +713,10 @@ def generate_accum_graph(user_filter_list=None):
 
 def generate_accum2_graph(user_filter_list=None):
     fig = go.Figure()
-    user_dict, date_to_user_dict = get_accum_flex2()
+    user_dict, date_to_user_dict = get_accum_flex2(include_zero=False)
     for user in sorted(user_dict.keys(), key=lambda x: user_dict[x]['accum'][-1])[::-1]:
         if has_user(user, user_filter_list):
-            user_dict[user]['y'] = sorted(set(user_dict[user]['y']))
+            # user_dict[user]['y'] = sorted(set(user_dict[user]['y']))
             fig.add_trace(go.Scatter(x=user_dict[user]['x'], y=user_dict[user]['y'],
                 mode='lines', name=user, line=dict(color=user_dict[user]['color'])))
     fig.update_layout(title='Flex - Accumulated Graph - '+('All' if user_filter_list is None else ' '.join(user_filter_list)))
@@ -747,7 +759,7 @@ def generate_accum100_graph(user_filter_list=None):
 
 def generate_f1_graph(user_filter_list=None):
     fig = go.Figure()
-    user_dict, date_to_user_dict = get_accum_flex(include_zero=True)
+    user_dict, date_to_user_dict = get_accum_flex(include_zero=False)
     last_day_rank_list = sorted([[user_dict[user]['accum'][-1], user] for user in user_dict.keys()])
     if user_filter_list is None:
         user_list = [user for accum, user in last_day_rank_list]
@@ -771,7 +783,7 @@ def generate_f1_graph(user_filter_list=None):
 
 def generate_f1_graph2(user_filter_list=None):
     fig = go.Figure()
-    user_dict, date_to_user_dict = get_accum_flex2(include_zero=True)
+    user_dict, date_to_user_dict = get_accum_flex2(include_zero=False)
     last_day_rank_list = sorted([[user_dict[user]['accum'][-1], user] for user in user_dict.keys()])
     if user_filter_list is None:
         user_list = [user for accum, user in last_day_rank_list]

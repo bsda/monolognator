@@ -142,14 +142,14 @@ def chuva2(update, context, chat_id=None):
 
 
 def scheduled_weather(context):
-    locations = ['London', 'Sartrouville', 'Barcelona', 'Geneva', 'Zurich']
+    locations = ['London', 'Sartrouville', 'Barcelona', 'Geneva', 'Zurich', 'Santo Antonio do Pinhal']
     for l in locations:
         results = get_weather(l)
         max_temp = results['daily']['data'][0]['temperatureMax']
         chove, time_of_rain, chance_of_rain = vai_chover(results)
         logger.info(f'Chove? {chove}')
         if chove == 'Vai chover':
-            img = gif.get_random_from_search(keyword='mourning')
+            img = gif.get_random_from_search(keyword='sadness')
         else:
             img = gif.get_random_from_search(keyword='celebration')
         context.bot.send_document(chat_id=-1001105653255,

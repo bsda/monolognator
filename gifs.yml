@@ -2,10 +2,6 @@ informer:
   type: static
   tenor_gif:
     - 13141855
-lula:
-  type: static
-  tenor_gif:
-    - 5544629
 slough:
   type: static
   tenor_gif:
@@ -15,19 +11,6 @@ london999:
   tenor_gif:
     - 4927885
     - 16737844
-#morte:
-#  type: static
-#  aliases:
-#    - morreu
-#  tenor_gif:
-#    - 16737844
-#    - 16804143
-#    - 16790194
-#    - 16776072
-#    - 16776074
-#    - 16776071
-#    - 16776066
-#    - 16776069
 vai ficar tudo bem:
   type: random
   keywords:

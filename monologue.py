@@ -69,17 +69,18 @@ def add_count(chat, user, update):
     user_counter['msgs'].append(update.message.text)
 
 
-def initialize_count(chat, user, update):
+def initialize_count(chat_id, user_id, user_name, chat_name, update):
     global counter
-    logger.info(f'Initializing counter on {chat}, {user}')
+    logger.info(f'Initializing counter for {user_name} {chat_id}, {user_id}')
+    logger.info(f'Count for {user_name} on {chat_name}: 1')
     # if chat not in counter:
-    counter[chat] = {}
-    counter[chat][user] = {}
-    user_counter = counter[chat][user]
+    counter[chat_id] = {}
+    counter[chat_id][user_id] = {}
+    user_counter = counter[chat_id][user_id]
     user_counter['count'] = 1
     user_counter['msg_ids'] = [update.message.message_id]
     user_counter['msgs'] = [update.message.text]
-    counter[chat]['latest_by'] = user
+    counter[chat_id]['latest_by'] = user_id
 
 
 def reset_count(chat, user, update):
@@ -120,95 +121,51 @@ def monolognate(chat, user, update, context):
 
     try:
         context.bot.send_message(chat_id=update.message.chat_id,
-                         text='*Monologue by {}*:\n\n`{}`'.format(
+                         text='*Monólogo do {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
                              monologue),
                          parse_mode=telegram.ParseMode.MARKDOWN,
                          timeout=15)
-    except BadRequest as e:
-        logger.info(f'BadRequest: {e}')
-        context.bot.send_message(chat_id=update.message.chat_id,
-                         text='*Monologue by {}*:\n\n`{}`'.format(
-                             update.message.from_user.first_name,
-                             monologue),
-                         parse_mode=telegram.ParseMode.MARKDOWN,
-                         timeout=15)
-    except RetryAfter as e:
-        logger.info(f'RetryAfter: {e.retry_after}')
-        sleep(int(e.retry_after))
-        context.bot.send_message(chat_id=update.message.chat_id,
-                         text='*Monologue by {}*:\n\n`{}`'.format(
-                             update.message.from_user.first_name,
-                             monologue),
-                         parse_mode=telegram.ParseMode.MARKDOWN,
-                         timeout=15)
-    except TimedOut as e:
-        logger.info(f'TimedOut: {e}')
-        sleep(1)
-        context.bot.send_message(chat_id=update.message.chat_id,
-                         text='*Monologue by {}*:\n\n`{}`'.format(
-                             update.message.from_user.first_name,
-                             monologue),
-                         parse_mode=telegram.ParseMode.MARKDOWN,
-                         timeout=15)
-    except Unauthorized as e:
-        logger.info(f'Unauthorized: {e}')
-        sleep(0.25)
-        context.bot.send_message(chat_id=update.message.chat_id,
-                         text='*Monologue by {}*:\n\n`{}`'.format(
-                             update.message.from_user.first_name,
-                             monologue),
-                         parse_mode=telegram.ParseMode.MARKDOWN,
-                         timeout=15)
-    except NetworkError as e:
-        logger.info(f'NetworkError: {e}')
-        sleep(1)
-        context.bot.send_message(chat_id=update.message.chat_id,
-                         text='*Monologue by {}*:\n\n`{}`'.format(
-                             update.message.from_user.first_name,
-                             monologue),
-                         parse_mode=telegram.ParseMode.MARKDOWN,
-                         timeout=15)
-    except Exception as e:
+    except (BadRequest, RetryAfter, TimedOut, Unauthorized, NetworkError) as e:
         logger.info(f'Some Shit happened: {e}')
-        sleep(1)
+        logger.info(f'Trying again')
         context.bot.send_message(chat_id=update.message.chat_id,
-                         text='*Monologue by {}*:\n\n`{}`'.format(
+                         text='*Monólogo do {}*:\n\n`{}`'.format(
                              update.message.from_user.first_name,
                              monologue),
                          parse_mode=telegram.ParseMode.MARKDOWN,
                          timeout=15)
-        # Send monologue back as a single message
     finally:
         reset_count(chat, user, update)
 
 
 def handle_counter(update, context):
-    if not update.message.from_user:
-        user = update.message.from_user.id
-        name = update.message.from_user.first_name
+    if update.message.from_user:
+        user_id = update.message.from_user.id
+        user_name = update.message.from_user.first_name
     else:
-        user = 'Unknown'
-        name = 'Unknown'
-    chat = update.message.chat_id
+        user_id = 'Unknown'
+        user_name = 'Unknown'
+    chat_id = update.message.chat_id
+    if update.message.chat.type == 'private':
+        chat_name = 'Private Chat'
+    else:
+        chat_name = update.message.chat.title
     message = update.message
-    logger.info(f'Msg on {update.message.chat.title}({chat})'
-                f' from {name}({user}): {update.message.text}')
+    logger.info(f'Msg on {chat_name} from {user_name}: {update.message.text}')
 
     # If it's a new user or the count was reset earlier
-    if chat not in counter or user not in counter[chat] and not message.reply_to_message:
-        initialize_count(chat, user, update)
+    if chat_id not in counter or user_id not in counter[chat_id] and not message.reply_to_message:
+        initialize_count(chat_id, user_id, user_name, chat_name, update)
     else:
         # if we seen the user before, check if previous msg was by the same user
         # if it was, increase counter and add msgs
-        if user == counter[chat].get('latest_by') and not message.reply_to_message:
-            add_count(chat, user, update)
-            logger.info(f'Count for {update.message.from_user.first_name}'
-                        f' on {update.message.chat.title}: {get_count(chat, user)}')
+        if user_id == counter[chat_id].get('latest_by') and not message.reply_to_message:
+            add_count(chat_id, user_id, update)
+            logger.info(f'Count for {user_name} on {chat_name}: {get_count(chat_id, user_id)}')
             # Check if user hit  chat limit. If it did, monolognate it
-            if hit_limit(chat, user, update):
-                monolognate(chat, user, update, context)
-                reset_count(chat, user, update)
+            if hit_limit(chat_id, user_id, update):
+                monolognate(chat_id, user_id, update, context)
         else:
-            reset_count(chat, user, update)
+            reset_count(chat_id, user_id, update)
 

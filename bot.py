@@ -124,7 +124,7 @@ def main():
 
 
     updater.dispatcher.add_error_handler(error_callback)
-    # updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
+    updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
     # tweet_job = j.run_repeating(send_tweets, interval=60, first=20)

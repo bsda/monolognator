@@ -192,7 +192,7 @@ def word_watcher_regex():
     keys = ([i for i in gif_filters.keys()])
     alias_lists = [gif_filters[i].get('aliases') for i in gif_filters.keys() if gif_filters[i].get('aliases')]
     aliases = ([i for sublist in alias_lists for i in sublist])
-    regex = re.compile('|'.join(keys + aliases), re.IGNORECASE)
+    regex = re.compile('|'.join(keys + aliases), (re.IGNORECASE | re.UNICODE))
     return regex
 
 
@@ -201,7 +201,7 @@ def get_gif_key(word):
     logger.info(f'Getting gif key for {word}')
     for i in gif_filters.keys():
         if gif_filters[i].get('aliases'):
-            aliasrex = re.compile('|'.join(gif_filters[i].get('aliases')), re.IGNORECASE)
+            aliasrex = re.compile('|'.join(gif_filters[i].get('aliases')), (re.IGNORECASE | re.UNICODE))
             if word in gif_filters[i].get('aliases') or re.search(aliasrex, word):
                 return i
 

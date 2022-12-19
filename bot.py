@@ -7,7 +7,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler
 from telegram.ext import Filters, InlineQueryHandler, RegexHandler
 from telegram.ext import CallbackQueryHandler
 from beer import beer_search_menu, beer_info, dry_score_message, wet_score_message
-from monologue import query_limit, set_limit, handle_counter
+from monologue import query_limit, set_limit, handle_counter, handle_gifs
 from movies import movie_search_menu, movie_info, person_search_menu, person_info
 # from twitter import start_twitter_stream, send_tweets
 from weather import chuva, chuva2, scheduled_weather, send_weather
@@ -125,6 +125,7 @@ def main():
 
     updater.dispatcher.add_error_handler(error_callback)
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_counter))
+    updater.dispatcher.add_handler(MessageHandler(Filters.document.gif, handle_gifs))
     j = updater.job_queue
     daily_job = j.run_daily(scheduled_weather, time=datetime.time(6))
     # tweet_job = j.run_repeating(send_tweets, interval=60, first=20)

@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 counter = {}
+gif_counter = {}
 msg_limit = {}
 my_chat_id = 113426151
 
@@ -59,7 +60,6 @@ def delete_messages(context, user, chat):
     # Delete messages from group
     for m in set(counter[chat][user]['msg_ids']):
         context.bot.delete_message(chat_id=chat, message_id=m)
-
 
 def add_count(chat, user, update):
     global counter
@@ -138,6 +138,15 @@ def monolognate(chat, user, update, context):
     finally:
         reset_count(chat, user, update)
 
+
+def handle_gifs(update, context):
+    noisy_users = ['Gustavo']
+    chat_id = update.message.chat_id
+    message_id = update.message.message_id
+    if update.message.from_user.first_name in noisy_users:
+        # delete_message(context, update.message.chat_id)
+        logger.info(f'Deleting GIF from noisy users')
+        context.bot.delete_message(chat_id=chat_id, message_id=message_id)
 
 def handle_counter(update, context):
     if update.message.from_user:

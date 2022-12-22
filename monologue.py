@@ -140,12 +140,13 @@ def monolognate(chat, user, update, context):
 
 
 def handle_gifs(update, context):
-    noisy_users = ['@Jgguk1', '@bsavioli']
+    logger.info(f'{update.message.document.mime_type} received from {update.message.from_user}')
+    noisy_users = ['Jgguk1', 'bsavioli']
     chat_id = update.message.chat_id
     message_id = update.message.message_id
-    if update.message.from_user.name in noisy_users:
+    if update.message.from_user.username in noisy_users:
         # delete_message(context, update.message.chat_id)
-        logger.info(f'Deleting GIF from noisy users')
+        logger.info(f'Deleting GIF from {update.message.from_user.username}')
         context.bot.delete_message(chat_id=chat_id, message_id=message_id)
 
 def handle_counter(update, context):
